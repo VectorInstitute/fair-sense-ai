@@ -1,0 +1,10 @@
+torch
+transformers
+Pillow
+pandas
+gradio
+plotly
+numpy
+opencv-python
+pytesseract
+openpyxl
