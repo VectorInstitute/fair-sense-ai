@@ -1,0 +1,1 @@
+pip install torch transformers Pillow pandas gradio plotly opencv-python pytesseract
