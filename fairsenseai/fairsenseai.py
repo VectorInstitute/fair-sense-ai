@@ -1,59 +1,68 @@
-import os
-import time  # For simulating progress updates
-import torch
-import ollama
-from transformers import (
-    AutoModelForCausalLM, AutoTokenizer, BlipProcessor, BlipForConditionalGeneration, pipeline
-)
-from PIL import Image
-import pandas as pd
-import gradio as gr
-import plotly.graph_objects as go  # For creating charts
-import plotly.express as px  # For additional chart types
-
-# Additional Imports for OCR
-import pytesseract
-import logging
-
 import base64
+import logging
+import os
+import time
+from functools import partial
 from io import BytesIO
+from typing import Any, Callable, Dict, List, TextIO, Tuple
 
-# For image preprocessing
 import cv2
+import gradio as gr
 import numpy as np
+import ollama
+import pandas as pd
+import plotly.express as px
+import pytesseract
+import torch
+from PIL import Image
+from plotly.graph_objs import Figure
+from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
+from transformers.pipelines import Pipeline
 
-if __name__ == "__main__":
-    # Set up logging
-    logging.basicConfig(level=logging.INFO)
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
+class FairsenseProperties:
+    def __init__(
+        self,
+        device: torch.device,
+        text_model_hf_id: str,
+        blip_model_id: str,
+        default_directory: str,
+        summarizer: Pipeline,
+        ollama_client: ollama.Client,
+        blip_processor: BlipProcessor,
+        blip_model: BlipForConditionalGeneration,
+        ai_safety_risks: List[Dict[str, Any]],
+    ):
+        self.device = device
+        self.text_model_hf_id = text_model_hf_id
+        self.blip_model_id = blip_model_id
+        self.default_directory = default_directory
+        self.summarizer = summarizer
+        self.ollama_client = ollama_client
+        self.blip_processor = blip_processor
+        self.blip_model = blip_model
+        self.ai_safety_risks = ai_safety_risks
+
+FAIRSENSE_PROPERTIES = None
+
+def initialize():
     # Device Setup
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Model IDs
-    # Use accessible models for demonstration purposes
-    # TEXT_MODEL_HF_ID = "gpt2"  # Or "distilgpt2" for a smaller model
-    # TEXT_MODEL_HF_ID = "meta-llama/Llama-3.2-1B-Instruct"
-    # TEXT_MODEL_HF_ID = "unsloth/Llama-3.2-1B-Instruct"
-    TEXT_MODEL_HF_ID = 'llama3.2'
-
-    # BLIP_MODEL_ID = "Salesforce/blip-image-captioning-large"
-    BLIP_MODEL_ID = "Salesforce/blip-image-captioning-base"
-    client = ollama.Client()
+    text_model_hf_id = 'llama3.2'
+    blip_model_id = "Salesforce/blip-image-captioning-base"
     # Load Models
     print("Loading models...")
     try:
         # Text Models
-        # tokenizer = AutoTokenizer.from_pretrained(TEXT_MODEL_HF_ID, use_fast=False)
-        # tokenizer.add_special_tokens({
-        #     'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>', 'pad_token': '<pad>'
-        # })
-        # tokenizer.pad_token = tokenizer.eos_token
-        # text_model = AutoModelForCausalLM.from_pretrained(TEXT_MODEL_HF_ID).to(DEVICE).eval()
-        # text_model.resize_token_embeddings(len(tokenizer))
-        # text_model = ollama.Client()
+        ollama_client = ollama.Client()
+
         # Image Captioning Models
-        blip_processor = BlipProcessor.from_pretrained(BLIP_MODEL_ID)
-        blip_model = BlipForConditionalGeneration.from_pretrained(BLIP_MODEL_ID).to(DEVICE)
+        blip_processor = BlipProcessor.from_pretrained(blip_model_id)
+        blip_model = BlipForConditionalGeneration.from_pretrained(blip_model_id).to(device)
 
         # Summarizer for post-processing
         summarizer = pipeline(
@@ -66,8 +75,8 @@ if __name__ == "__main__":
     except Exception as e:
         raise RuntimeError(f"Error loading models: {e}")
 
-    DEFAULT_DIRECTORY = "bias-results"
-    os.makedirs(DEFAULT_DIRECTORY, exist_ok=True)
+    default_directory = "bias-results"
+    os.makedirs(default_directory, exist_ok=True)
 
     # Expanded AI Safety Risks Data
     ai_safety_risks = [
@@ -103,13 +112,28 @@ if __name__ == "__main__":
          "Mitigation": "Enforce laws protecting individual privacy."},
     ]
 
+    global FAIRSENSE_PROPERTIES
+    FAIRSENSE_PROPERTIES = FairsenseProperties(
+        device,
+        text_model_hf_id,
+        blip_model_id,
+        default_directory,
+        summarizer,
+        ollama_client,
+        blip_processor,
+        blip_model,
+        ai_safety_risks,
+    )
+
 
 # Helper Functions
-def post_process_response(response):
+def post_process_response(response: str) -> str:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     cleaned_response = ' '.join(response.split())
     if len(cleaned_response.split()) > 50:
         try:
-            summary = summarizer(cleaned_response, max_length=200, min_length=50, do_sample=False)
+            summary = FAIRSENSE_PROPERTIES.summarizer(cleaned_response, max_length=200, min_length=50, do_sample=False)
             cleaned_response = summary[0]['summary_text']
         except Exception as e:
             cleaned_response = f"Error during summarization: {e}\nOriginal response: {cleaned_response}"
@@ -119,7 +143,7 @@ def post_process_response(response):
     return f"<strong>Here is the analysis:</strong> {cleaned_response}"
 
 
-def highlight_bias(text, bias_words):
+def highlight_bias(text: str, bias_words: List[str]) -> str:
     # If no biased words, return the original text unaltered
     if not bias_words:
         return f"<div>{text}</div>"
@@ -129,56 +153,9 @@ def highlight_bias(text, bias_words):
     return f"<div>{text}</div>"
 
 
-# def generate_response_with_model(prompt, progress=None):
-#     try:
-#         if progress:
-#             progress(0.1, "Tokenizing prompt...")
-#         inputs = tokenizer(
-#             prompt,
-#             return_tensors="pt",
-#             padding="max_length",
-#             truncation=True,
-#             max_length=1024
-#         ).to(DEVICE)
+def generate_response_with_model(prompt: str, progress: Callable[[float, str], None] = None) -> str:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
 
-#         if progress:
-#             progress(0.3, "Generating response...")
-#         with torch.no_grad():
-#             outputs = text_model.generate(
-#                 input_ids=inputs["input_ids"],
-#                 attention_mask=inputs["attention_mask"],
-#                 max_new_tokens=1000,  # Adjusted max tokens
-#                 eos_token_id=tokenizer.eos_token_id,
-#                 pad_token_id=tokenizer.pad_token_id,
-#                 do_sample=True,
-#                 num_beams=3,
-#                 temperature=0.7,
-#                 repetition_penalty=1.2,
-#                 early_stopping=True
-#             )
-
-#         if progress:
-#             progress(0.7, "Decoding output...")
-
-#         # Safeguard against index out of range
-#         start_index = inputs["input_ids"].shape[1]
-#         if len(outputs[0]) <= start_index:
-#             response = ""
-#         else:
-#             response = tokenizer.decode(
-#                 outputs[0][start_index:], skip_special_tokens=True
-#             ).strip()
-
-#         if progress:
-#             progress(1.0, "Done")
-#         return response
-#     except Exception as e:
-#         if progress:
-#             progress(1.0, "Error occurred")
-#         return f"Error generating response: {e}"
-
-
-def generate_response_with_model(prompt, progress=None):
     try:
         if progress:
             progress(0.1, "Preparing prompt...")
@@ -186,19 +163,16 @@ def generate_response_with_model(prompt, progress=None):
         if progress:
             progress(0.3, "Generating response...")
 
-        # Create an Ollama client
-
         # Generate response using Ollama
-        response = client.chat(model=TEXT_MODEL_HF_ID, messages=[
-            {
-                'role': 'user',
-                'content': prompt
-            }
-        ])
-        #     if "message" in response and "content" in response["message"]:
-        #     return response["message"]["content"]
-        # else:
-        #     return "No response from Ollama."
+        response = FAIRSENSE_PROPERTIES.ollama_client.chat(
+            model=FAIRSENSE_PROPERTIES.text_model_hf_id,
+            messages=[
+                {
+                    'role': 'user',
+                    'content': prompt
+                }
+            ],
+        )
         if progress:
             progress(0.7, "Processing response...")
 
@@ -215,15 +189,19 @@ def generate_response_with_model(prompt, progress=None):
 
 
 # Governance and Safety
-def ai_governance_response(prompt, progress=None):
+def ai_governance_response(prompt: str, progress: Callable[[float, str], None] = None) -> str:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     response = generate_response_with_model(
         f"Provide insights and recommendations on the following AI governance and safety topic:\n\n{prompt}",
-        progress=progress
+        progress=progress,
     )
     return post_process_response(response)
 
 
-def analyze_text_for_bias(text_input, progress=gr.Progress()):
+def analyze_text_for_bias(text_input: str, progress: gr.Progress = gr.Progress()) -> Tuple[str, str]:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     progress(0, "Initializing analysis...")  # Start the progress bar
 
     try:
@@ -240,7 +218,7 @@ def analyze_text_for_bias(text_input, progress=gr.Progress()):
         progress(0.3, "Generating response...")
         response = generate_response_with_model(
             prompt,
-            progress=lambda x, desc="": progress(0.3 + x * 0.4, desc)
+            progress=lambda x, desc="": progress(0.3 + x * 0.4, desc),
         )
 
         progress(0.7, "Post-processing response...")
@@ -258,7 +236,7 @@ def analyze_text_for_bias(text_input, progress=gr.Progress()):
         return f"Error: {e}", ""
 
 
-def preprocess_image(image):
+def preprocess_image(image: Image) -> Image:
     image = np.array(image)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     # Apply adaptive thresholding
@@ -271,14 +249,16 @@ def preprocess_image(image):
     return Image.fromarray(thresh)
 
 
-def analyze_image_for_bias(image, progress=gr.Progress()):
+def analyze_image_for_bias(image: Image, progress=gr.Progress()) -> Tuple[str, str]:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     progress(0, "Initializing image analysis...")  # Start the progress bar
 
     try:
         time.sleep(0.1)  # Simulate delay
         progress(0.1, "Processing image...")
         image = image.convert("RGB")
-        inputs = blip_processor(images=image, return_tensors="pt").to(DEVICE)
+        inputs = FAIRSENSE_PROPERTIES.blip_processor(images=image, return_tensors="pt").to(FAIRSENSE_PROPERTIES.device)
 
         progress(0.2, "Extracting text from image...")
         # Preprocess image for better OCR results
@@ -288,8 +268,8 @@ def analyze_image_for_bias(image, progress=gr.Progress()):
 
         progress(0.3, "Generating caption...")
         with torch.no_grad():
-            caption_ids = blip_model.generate(**inputs, max_length=300, num_beams=5, temperature=0.7)
-        caption_text = blip_processor.tokenizer.decode(caption_ids[0], skip_special_tokens=True).strip()
+            caption_ids = FAIRSENSE_PROPERTIES.blip_model.generate(**inputs, max_length=300, num_beams=5, temperature=0.7)
+        caption_text = FAIRSENSE_PROPERTIES.blip_processor.tokenizer.decode(caption_ids[0], skip_special_tokens=True).strip()
 
         # Combine extracted text and caption
         combined_text = f"{caption_text}. {extracted_text}"
@@ -324,7 +304,9 @@ def analyze_image_for_bias(image, progress=gr.Progress()):
 
 
 # Batch Processing Functions
-def analyze_text_csv(file, output_filename="analysis_results.csv"):
+def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv") -> str:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     try:
         df = pd.read_csv(file.name)
         if "text" not in df.columns:
@@ -357,7 +339,9 @@ def analyze_text_csv(file, output_filename="analysis_results.csv"):
         return f"Error processing CSV: {e}"
 
 
-def analyze_images_batch(images, output_filename="image_analysis_results.csv"):
+def analyze_images_batch(images: List[str], output_filename: str = "image_analysis_results.csv") -> str:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     try:
         results = []
         for i, image_path in enumerate(images):
@@ -398,8 +382,8 @@ def analyze_images_batch(images, output_filename="image_analysis_results.csv"):
         return f"Error processing images: {e}"
 
 
-def save_results_to_csv(df, filename="results.csv"):
-    file_path = os.path.join(DEFAULT_DIRECTORY, filename)  # Combine directory and filename
+def save_results_to_csv(df: pd.DataFrame, default_directory: str, filename: str = "results.csv") -> str:
+    file_path = os.path.join(default_directory, filename)  # Combine directory and filename
     try:
         df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
         return file_path  # Return the full file path for reference
@@ -408,8 +392,10 @@ def save_results_to_csv(df, filename="results.csv"):
 
 
 # Function to display Enhanced AI Safety Dashboard
-def display_ai_safety_dashboard():
-    df = pd.DataFrame(ai_safety_risks)
+def display_ai_safety_dashboard() -> Tuple[Figure, Figure, Figure, pd.DataFrame]:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
+    df = pd.DataFrame(FAIRSENSE_PROPERTIES.ai_safety_risks)
 
     # Bar Chart: Percentage Distribution of AI Risks
     fig_bar = px.bar(
@@ -461,7 +447,7 @@ def display_ai_safety_dashboard():
 
 
 # New Function: About Fairsense-AI
-def display_about_page():
+def display_about_page() -> str:
     about_html = """
     <style>
         .about-container {
@@ -529,7 +515,9 @@ def display_about_page():
     return about_html
 
 
-def main():
+def start_server() -> None:
+    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+
     # Gradio Interface
     description = """
     <style>
@@ -622,18 +610,6 @@ def main():
                     show_progress=True
                 )
 
-            # with gr.TabItem("🖼️ Image Analysis"):
-            #     with gr.Row():
-            #         image_input = gr.Image(type="pil", label="Upload Image")
-            #         analyze_image_button = gr.Button("Analyze")
-            #     highlighted_caption = gr.HTML(label="Highlighted Text and Caption")
-            #     image_analysis = gr.HTML(label="Detailed Analysis")
-            #     analyze_image_button.click(
-            #         analyze_image_for_bias,
-            #         inputs=image_input,
-            #         outputs=[highlighted_caption, image_analysis],
-            #         show_progress=True
-            #     )
             with gr.TabItem("🖼️ Image Analysis"):
                 with gr.Row():
                     image_input = gr.Image(type="pil", label="Upload Image")
@@ -721,7 +697,7 @@ def main():
                 governance_insights = gr.HTML(label="Governance Insights")
 
                 # Function to handle the input
-                def governance_topic_handler(selected_topic, custom_topic, progress=gr.Progress()):
+                def governance_topic_handler(selected_topic: str, custom_topic: str, progress: gr.Progress = gr.Progress()):
                     progress(0, "Starting...")
                     topic = custom_topic.strip() if custom_topic.strip() else selected_topic
                     if not topic:
@@ -739,7 +715,7 @@ def main():
                     governance_topic_handler,
                     inputs=[governance_dropdown, governance_input],
                     outputs=governance_insights,
-                    show_progress=True
+                    show_progress=True,
                 )
             with gr.TabItem("📊 AI Safety Risks Dashboard"):
                 fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
@@ -760,4 +736,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    initialize()
+    start_server()
