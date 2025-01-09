@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fairsenseai=fairsenseai:main',
+            'fairsenseai=fairsenseai:start_server',
         ],
     },
     classifiers=[
@@ -35,5 +35,5 @@ setup(
         'License :: OSI Approved :: MIT License',  # Update if you choose a different license
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.7',  # Specify your Python version
+    python_requires='>=3.9',  # Specify your Python version
 )
