@@ -6,6 +6,9 @@ The code is capable of running both on GPU and CPU. It will automatically detect
 there is a GPU available, and if it's not it will switch to using models that are
 capable of running on CPU only.
 
+Make sure to install the supporting tools as described in
+[the README file](./README.md#step-1-install-supporting-tools).
+
 ### Installing requirements
 
 Make a virtual environment and activate it:
