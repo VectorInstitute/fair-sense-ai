@@ -560,7 +560,7 @@ def display_about_page() -> str:
 
 
 def start_server() -> None:
-    assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
+    initialize()
 
     # Gradio Interface
     description = """
@@ -780,5 +780,4 @@ def start_server() -> None:
 
 
 if __name__ == "__main__":
-    initialize()
     start_server()
