@@ -2,9 +2,9 @@ import base64
 import logging
 import os
 import time
-from functools import partial
+from abc import ABCMeta, abstractmethod
 from io import BytesIO
-from typing import Any, Callable, Dict, List, TextIO, Tuple
+from typing import Callable, List, Optional, TextIO, Tuple
 
 import cv2
 import gradio as gr
@@ -16,114 +16,183 @@ import pytesseract
 import torch
 from PIL import Image
 from plotly.graph_objs import Figure
-from transformers import BlipProcessor, BlipForConditionalGeneration, pipeline
-from transformers.pipelines import Pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM, BlipProcessor, BlipForConditionalGeneration, pipeline
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-class FairsenseProperties:
-    def __init__(
-        self,
-        device: torch.device,
-        text_model_hf_id: str,
-        blip_model_id: str,
-        default_directory: str,
-        summarizer: Pipeline,
-        ollama_client: ollama.Client,
-        blip_processor: BlipProcessor,
-        blip_model: BlipForConditionalGeneration,
-        ai_safety_risks: List[Dict[str, Any]],
-    ):
-        self.device = device
-        self.text_model_hf_id = text_model_hf_id
-        self.blip_model_id = blip_model_id
-        self.default_directory = default_directory
-        self.summarizer = summarizer
-        self.ollama_client = ollama_client
-        self.blip_processor = blip_processor
-        self.blip_model = blip_model
-        self.ai_safety_risks = ai_safety_risks
+class FairsenseProperties(object):
+    __metaclass__ = ABCMeta
 
-FAIRSENSE_PROPERTIES = None
+    @abstractmethod
+    def __init__(self):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.blip_model_id = "Salesforce/blip-image-captioning-base"
 
-def initialize():
-    # Device Setup
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Load Models
+        print("Loading models...")
+        try:
+            # Image Captioning Models
+            self.blip_processor = BlipProcessor.from_pretrained(self.blip_model_id)
+            self.blip_model = BlipForConditionalGeneration.from_pretrained(self.blip_model_id).to(self.device)
 
-    # Model IDs
-    text_model_hf_id = 'llama3.2'
-    blip_model_id = "Salesforce/blip-image-captioning-base"
-    # Load Models
-    print("Loading models...")
-    try:
-        # Text Models
-        ollama_client = ollama.Client()
+            # Summarizer for post-processing
+            self.summarizer = pipeline(
+                "summarization",
+                model="sshleifer/distilbart-cnn-12-6",
+                device=0 if torch.cuda.is_available() else -1
+            )
 
-        # Image Captioning Models
-        blip_processor = BlipProcessor.from_pretrained(blip_model_id)
-        blip_model = BlipForConditionalGeneration.from_pretrained(blip_model_id).to(device)
+            print("Models loaded successfully.")
+        except Exception as e:
+            raise RuntimeError(f"Error loading models: {e}")
 
-        # Summarizer for post-processing
-        summarizer = pipeline(
-            "summarization",
-            model="sshleifer/distilbart-cnn-12-6",
-            device=0 if torch.cuda.is_available() else -1
+        self.default_directory = "bias-results"
+        os.makedirs(self.default_directory, exist_ok=True)
+
+        # Expanded AI Safety Risks Data
+        self.ai_safety_risks = [
+            {"Risk": "Disinformation Spread", "Category": "Information Integrity", "Percentage": 20, "Severity": 8,
+             "Likelihood": 7, "Impact": "High",
+             "Description": "AI-generated content can spread false information rapidly.",
+             "Mitigation": "Develop AI tools for fact-checking and verification."},
+            {"Risk": "Algorithmic Bias", "Category": "Fairness and Bias", "Percentage": 18, "Severity": 7,
+             "Likelihood": 8,
+             "Impact": "High", "Description": "AI systems may perpetuate or amplify societal biases.",
+             "Mitigation": "Implement fairness-aware algorithms and diverse datasets."},
+            {"Risk": "Privacy Invasion", "Category": "Data Privacy", "Percentage": 15, "Severity": 6, "Likelihood": 6,
+             "Impact": "Medium", "Description": "AI can infer personal information without consent.",
+             "Mitigation": "Adopt privacy-preserving techniques like differential privacy."},
+            {"Risk": "Lack of Transparency", "Category": "Explainability", "Percentage": 12, "Severity": 5,
+             "Likelihood": 5,
+             "Impact": "Medium", "Description": "Complex models can be opaque, making decisions hard to understand.",
+             "Mitigation": "Use explainable AI methods to increase transparency."},
+            {"Risk": "Security Vulnerabilities", "Category": "Robustness", "Percentage": 10, "Severity": 6,
+             "Likelihood": 5,
+             "Impact": "Medium", "Description": "AI systems may be susceptible to adversarial attacks.",
+             "Mitigation": "Employ robust training methods and continuous monitoring."},
+            {"Risk": "Job Displacement", "Category": "Economic Impact", "Percentage": 8, "Severity": 7, "Likelihood": 6,
+             "Impact": "High", "Description": "Automation may lead to loss of jobs in certain sectors.",
+             "Mitigation": "Promote reskilling and education programs."},
+            {"Risk": "Ethical Dilemmas", "Category": "Ethics", "Percentage": 7, "Severity": 5, "Likelihood": 4,
+             "Impact": "Medium", "Description": "AI may make decisions conflicting with human values.",
+             "Mitigation": "Incorporate ethical guidelines into AI development."},
+            {"Risk": "Autonomous Weapons", "Category": "Physical Safety", "Percentage": 5, "Severity": 9,
+             "Likelihood": 3,
+             "Impact": "Critical", "Description": "AI could be used in weapons without human oversight.",
+             "Mitigation": "Establish international regulations and oversight."},
+            {"Risk": "Environmental Impact", "Category": "Sustainability", "Percentage": 3, "Severity": 4,
+             "Likelihood": 5,
+             "Impact": "Low", "Description": "High energy consumption in AI training affects the environment.",
+             "Mitigation": "Optimize models and use renewable energy sources."},
+            {"Risk": "Misuse for Surveillance", "Category": "Human Rights", "Percentage": 2, "Severity": 8,
+             "Likelihood": 2,
+             "Impact": "High", "Description": "AI can be used for mass surveillance violating privacy rights.",
+             "Mitigation": "Enforce laws protecting individual privacy."},
+        ]
+
+    @abstractmethod
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
+        raise NotImplementedError
+
+
+class FairsenseGPUProperties(FairsenseProperties):
+    def __init__(self):
+        super().__init__()
+        self.text_model_hf_id = "unsloth/Llama-3.2-1B-Instruct"
+        self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
+        self.tokenizer.add_special_tokens({
+            'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>', 'pad_token': '<pad>'
+        })
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.text_model = AutoModelForCausalLM.from_pretrained(self.text_model_hf_id).to(self.device).eval()
+        self.text_model.resize_token_embeddings(len(self.tokenizer))
+
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
+        if progress:
+            progress(0.1, "Tokenizing prompt...")
+        inputs = self.tokenizer(
+            prompt,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=1024
+        ).to(self.device)
+
+        if progress:
+            progress(0.3, "Generating response...")
+        with torch.no_grad():
+            outputs = self.text_model.generate(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+                max_new_tokens=1000,  # Adjusted max tokens
+                eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.pad_token_id,
+                do_sample=True,
+                num_beams=3,
+                temperature=0.7,
+                repetition_penalty=1.2,
+                early_stopping=True
+            )
+
+        if progress:
+            progress(0.7, "Decoding output...")
+
+        # Safeguard against index out of range
+        start_index = inputs["input_ids"].shape[1]
+        if len(outputs[0]) <= start_index:
+            response = ""
+        else:
+            response = self.tokenizer.decode(
+                outputs[0][start_index:], skip_special_tokens=True
+            ).strip()
+
+        if progress:
+            progress(1.0, "Done")
+        return response
+
+
+class FairsenseCPUProperties(FairsenseProperties):
+    def __init__(self):
+        super().__init__()
+        self.text_model_hf_id = "llama3.2"  # from ollama
+        self.ollama_client = ollama.Client()
+
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
+        if progress:
+            progress(0.1, "Preparing prompt...")
+
+        if progress:
+            progress(0.3, "Generating response...")
+
+            # Generate response using Ollama
+        response = self.ollama_client.chat(
+            model=self.text_model_hf_id,
+            messages=[
+                {
+                    'role': 'user',
+                    'content': prompt
+                }
+            ],
         )
+        if progress:
+            progress(0.7, "Processing response...")
 
-        print("Models loaded successfully.")
-    except Exception as e:
-        raise RuntimeError(f"Error loading models: {e}")
+        # Extract the generated text from the response
+        generated_text = response['message']['content']
 
-    default_directory = "bias-results"
-    os.makedirs(default_directory, exist_ok=True)
+        if progress:
+            progress(1.0, "Done")
+        return generated_text
 
-    # Expanded AI Safety Risks Data
-    ai_safety_risks = [
-        {"Risk": "Disinformation Spread", "Category": "Information Integrity", "Percentage": 20, "Severity": 8,
-         "Likelihood": 7, "Impact": "High", "Description": "AI-generated content can spread false information rapidly.",
-         "Mitigation": "Develop AI tools for fact-checking and verification."},
-        {"Risk": "Algorithmic Bias", "Category": "Fairness and Bias", "Percentage": 18, "Severity": 7, "Likelihood": 8,
-         "Impact": "High", "Description": "AI systems may perpetuate or amplify societal biases.",
-         "Mitigation": "Implement fairness-aware algorithms and diverse datasets."},
-        {"Risk": "Privacy Invasion", "Category": "Data Privacy", "Percentage": 15, "Severity": 6, "Likelihood": 6,
-         "Impact": "Medium", "Description": "AI can infer personal information without consent.",
-         "Mitigation": "Adopt privacy-preserving techniques like differential privacy."},
-        {"Risk": "Lack of Transparency", "Category": "Explainability", "Percentage": 12, "Severity": 5, "Likelihood": 5,
-         "Impact": "Medium", "Description": "Complex models can be opaque, making decisions hard to understand.",
-         "Mitigation": "Use explainable AI methods to increase transparency."},
-        {"Risk": "Security Vulnerabilities", "Category": "Robustness", "Percentage": 10, "Severity": 6, "Likelihood": 5,
-         "Impact": "Medium", "Description": "AI systems may be susceptible to adversarial attacks.",
-         "Mitigation": "Employ robust training methods and continuous monitoring."},
-        {"Risk": "Job Displacement", "Category": "Economic Impact", "Percentage": 8, "Severity": 7, "Likelihood": 6,
-         "Impact": "High", "Description": "Automation may lead to loss of jobs in certain sectors.",
-         "Mitigation": "Promote reskilling and education programs."},
-        {"Risk": "Ethical Dilemmas", "Category": "Ethics", "Percentage": 7, "Severity": 5, "Likelihood": 4,
-         "Impact": "Medium", "Description": "AI may make decisions conflicting with human values.",
-         "Mitigation": "Incorporate ethical guidelines into AI development."},
-        {"Risk": "Autonomous Weapons", "Category": "Physical Safety", "Percentage": 5, "Severity": 9, "Likelihood": 3,
-         "Impact": "Critical", "Description": "AI could be used in weapons without human oversight.",
-         "Mitigation": "Establish international regulations and oversight."},
-        {"Risk": "Environmental Impact", "Category": "Sustainability", "Percentage": 3, "Severity": 4, "Likelihood": 5,
-         "Impact": "Low", "Description": "High energy consumption in AI training affects the environment.",
-         "Mitigation": "Optimize models and use renewable energy sources."},
-        {"Risk": "Misuse for Surveillance", "Category": "Human Rights", "Percentage": 2, "Severity": 8, "Likelihood": 2,
-         "Impact": "High", "Description": "AI can be used for mass surveillance violating privacy rights.",
-         "Mitigation": "Enforce laws protecting individual privacy."},
-    ]
 
+FAIRSENSE_PROPERTIES: Optional[FairsenseProperties] = None
+def initialize():
     global FAIRSENSE_PROPERTIES
-    FAIRSENSE_PROPERTIES = FairsenseProperties(
-        device,
-        text_model_hf_id,
-        blip_model_id,
-        default_directory,
-        summarizer,
-        ollama_client,
-        blip_processor,
-        blip_model,
-        ai_safety_risks,
-    )
+    if torch.cuda.is_available():
+        FAIRSENSE_PROPERTIES = FairsenseGPUProperties()
+    else:
+        FAIRSENSE_PROPERTIES = FairsenseCPUProperties()
 
 
 # Helper Functions
@@ -155,33 +224,8 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
 
 def generate_response_with_model(prompt: str, progress: Callable[[float, str], None] = None) -> str:
     assert FAIRSENSE_PROPERTIES is not None, "Please call the initialize() function before calling this function."
-
     try:
-        if progress:
-            progress(0.1, "Preparing prompt...")
-
-        if progress:
-            progress(0.3, "Generating response...")
-
-        # Generate response using Ollama
-        response = FAIRSENSE_PROPERTIES.ollama_client.chat(
-            model=FAIRSENSE_PROPERTIES.text_model_hf_id,
-            messages=[
-                {
-                    'role': 'user',
-                    'content': prompt
-                }
-            ],
-        )
-        if progress:
-            progress(0.7, "Processing response...")
-
-        # Extract the generated text from the response
-        generated_text = response['message']['content']
-
-        if progress:
-            progress(1.0, "Done")
-        return generated_text
+        return FAIRSENSE_PROPERTIES.predict_with_text_model(prompt, progress)
     except Exception as e:
         if progress:
             progress(1.0, "Error occurred")
