@@ -187,7 +187,7 @@ class FairsenseCPURuntime(FairsenseRuntime):
 
 
 FAIRSENSE_RUNTIME: Optional[FairsenseRuntime] = None
-def initialize():
+def initialize() -> None:
     global FAIRSENSE_RUNTIME
     if torch.cuda.is_available():
         FAIRSENSE_RUNTIME = FairsenseGPURuntime()
