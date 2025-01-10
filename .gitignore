@@ -1,3 +1,5 @@
 venv/
 .idea/
 bias-results/
+/dist/
+/build/
