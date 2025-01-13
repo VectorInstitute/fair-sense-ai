@@ -1,111 +1,133 @@
-import os
-import time  # For simulating progress updates
-import torch
-from transformers import (
-    AutoModelForCausalLM, AutoTokenizer, BlipProcessor, BlipForConditionalGeneration, pipeline
-)
-from PIL import Image
-import pandas as pd
-import gradio as gr
-import plotly.graph_objects as go  # For creating charts
-import plotly.express as px  # For additional chart types
-
-# Additional Imports for OCR
-import pytesseract
-import logging
-
 import base64
+import logging
+import os
+import time
+from abc import ABCMeta, abstractmethod
 from io import BytesIO
+from typing import Callable, List, Optional, TextIO, Tuple
 
-# For image preprocessing
 import cv2
+import gradio as gr
 import numpy as np
+import ollama
+import pandas as pd
+import plotly.express as px
+import pytesseract
+import torch
+from PIL import Image
+from plotly.graph_objs import Figure
+from transformers import AutoTokenizer, AutoModelForCausalLM, BlipProcessor, BlipForConditionalGeneration, pipeline
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# Device Setup
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+class FairsenseRuntime(object):
+    __metaclass__ = ABCMeta
 
-# Model IDs
-# Use accessible models for demonstration purposes
-# TEXT_MODEL_HF_ID = "gpt2"  # Or "distilgpt2" for a smaller model
-# TEXT_MODEL_HF_ID = "meta-llama/Llama-3.2-1B-Instruct"
-TEXT_MODEL_HF_ID = "unsloth/Llama-3.2-1B-Instruct"
+    @abstractmethod
+    def __init__(self):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.blip_model_id = "Salesforce/blip-image-captioning-base"
 
-# BLIP_MODEL_ID = "Salesforce/blip-image-captioning-large"
-BLIP_MODEL_ID = "Salesforce/blip-image-captioning-base"
-
-# Load Models
-print("Loading models...")
-try:
-    # Text Models
-    tokenizer = AutoTokenizer.from_pretrained(TEXT_MODEL_HF_ID, use_fast=False)
-    tokenizer.add_special_tokens({
-        'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>', 'pad_token': '<pad>'
-    })
-    tokenizer.pad_token = tokenizer.eos_token
-    text_model = AutoModelForCausalLM.from_pretrained(TEXT_MODEL_HF_ID).to(DEVICE).eval()
-    text_model.resize_token_embeddings(len(tokenizer))
-    # Image Captioning Models
-    blip_processor = BlipProcessor.from_pretrained(BLIP_MODEL_ID)
-    blip_model = BlipForConditionalGeneration.from_pretrained(BLIP_MODEL_ID).to(DEVICE)
-    
-    # Summarizer for post-processing
-    summarizer = pipeline(
-        "summarization",
-        model="sshleifer/distilbart-cnn-12-6",
-        device=0 if torch.cuda.is_available() else -1
-    )
-    
-    print("Models loaded successfully.")
-except Exception as e:
-    raise RuntimeError(f"Error loading models: {e}")
-
-# Helper Functions
-def post_process_response(response):
-    cleaned_response = ' '.join(response.split())
-    if len(cleaned_response.split()) > 50:
+        # Load Models
+        print("Loading models...")
         try:
-            summary = summarizer(cleaned_response, max_length=200, min_length=50, do_sample=False)
-            cleaned_response = summary[0]['summary_text']
+            # Image Captioning Models
+            self.blip_processor = BlipProcessor.from_pretrained(self.blip_model_id)
+            self.blip_model = BlipForConditionalGeneration.from_pretrained(self.blip_model_id).to(self.device)
+
+            # Summarizer for post-processing
+            self.summarizer = pipeline(
+                "summarization",
+                model="sshleifer/distilbart-cnn-12-6",
+                device=0 if torch.cuda.is_available() else -1
+            )
+
+            print("Models loaded successfully.")
         except Exception as e:
-            cleaned_response = f"Error during summarization: {e}\nOriginal response: {cleaned_response}"
+            raise RuntimeError(f"Error loading models: {e}")
 
-    sentences = [sentence.strip() for sentence in cleaned_response.split('.')]
-    cleaned_response = '. '.join(sentences).strip() + ('.' if not cleaned_response.endswith('.') else '')
-    return f"<strong>Here is the analysis:</strong> {cleaned_response}"
+        self.default_directory = "bias-results"
+        os.makedirs(self.default_directory, exist_ok=True)
 
-def highlight_bias(text, bias_words):
-    # If no biased words, return the original text unaltered
-    if not bias_words:
-        return f"<div>{text}</div>"
-    # Highlight biased words in the text
-    for word in bias_words:
-        text = text.replace(word, f"<span style='color: red; font-weight: bold;'>{word}</span>")
-    return f"<div>{text}</div>"
+        # Expanded AI Safety Risks Data
+        self.ai_safety_risks = [
+            {"Risk": "Disinformation Spread", "Category": "Information Integrity", "Percentage": 20, "Severity": 8,
+             "Likelihood": 7, "Impact": "High",
+             "Description": "AI-generated content can spread false information rapidly.",
+             "Mitigation": "Develop AI tools for fact-checking and verification."},
+            {"Risk": "Algorithmic Bias", "Category": "Fairness and Bias", "Percentage": 18, "Severity": 7,
+             "Likelihood": 8,
+             "Impact": "High", "Description": "AI systems may perpetuate or amplify societal biases.",
+             "Mitigation": "Implement fairness-aware algorithms and diverse datasets."},
+            {"Risk": "Privacy Invasion", "Category": "Data Privacy", "Percentage": 15, "Severity": 6, "Likelihood": 6,
+             "Impact": "Medium", "Description": "AI can infer personal information without consent.",
+             "Mitigation": "Adopt privacy-preserving techniques like differential privacy."},
+            {"Risk": "Lack of Transparency", "Category": "Explainability", "Percentage": 12, "Severity": 5,
+             "Likelihood": 5,
+             "Impact": "Medium", "Description": "Complex models can be opaque, making decisions hard to understand.",
+             "Mitigation": "Use explainable AI methods to increase transparency."},
+            {"Risk": "Security Vulnerabilities", "Category": "Robustness", "Percentage": 10, "Severity": 6,
+             "Likelihood": 5,
+             "Impact": "Medium", "Description": "AI systems may be susceptible to adversarial attacks.",
+             "Mitigation": "Employ robust training methods and continuous monitoring."},
+            {"Risk": "Job Displacement", "Category": "Economic Impact", "Percentage": 8, "Severity": 7, "Likelihood": 6,
+             "Impact": "High", "Description": "Automation may lead to loss of jobs in certain sectors.",
+             "Mitigation": "Promote reskilling and education programs."},
+            {"Risk": "Ethical Dilemmas", "Category": "Ethics", "Percentage": 7, "Severity": 5, "Likelihood": 4,
+             "Impact": "Medium", "Description": "AI may make decisions conflicting with human values.",
+             "Mitigation": "Incorporate ethical guidelines into AI development."},
+            {"Risk": "Autonomous Weapons", "Category": "Physical Safety", "Percentage": 5, "Severity": 9,
+             "Likelihood": 3,
+             "Impact": "Critical", "Description": "AI could be used in weapons without human oversight.",
+             "Mitigation": "Establish international regulations and oversight."},
+            {"Risk": "Environmental Impact", "Category": "Sustainability", "Percentage": 3, "Severity": 4,
+             "Likelihood": 5,
+             "Impact": "Low", "Description": "High energy consumption in AI training affects the environment.",
+             "Mitigation": "Optimize models and use renewable energy sources."},
+            {"Risk": "Misuse for Surveillance", "Category": "Human Rights", "Percentage": 2, "Severity": 8,
+             "Likelihood": 2,
+             "Impact": "High", "Description": "AI can be used for mass surveillance violating privacy rights.",
+             "Mitigation": "Enforce laws protecting individual privacy."},
+        ]
 
-def generate_response_with_model(prompt, progress=None):
-    try:
+    @abstractmethod
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
+        raise NotImplementedError
+
+
+class FairsenseGPURuntime(FairsenseRuntime):
+    def __init__(self):
+        super().__init__()
+        self.text_model_hf_id = "unsloth/Llama-3.2-1B-Instruct"
+        self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
+        self.tokenizer.add_special_tokens({
+            'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>', 'pad_token': '<pad>'
+        })
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.text_model = AutoModelForCausalLM.from_pretrained(self.text_model_hf_id).to(self.device).eval()
+        self.text_model.resize_token_embeddings(len(self.tokenizer))
+
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
         if progress:
             progress(0.1, "Tokenizing prompt...")
-        inputs = tokenizer(
+        inputs = self.tokenizer(
             prompt,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
             max_length=1024
-        ).to(DEVICE)
+        ).to(self.device)
 
         if progress:
             progress(0.3, "Generating response...")
         with torch.no_grad():
-            outputs = text_model.generate(
+            outputs = self.text_model.generate(
                 input_ids=inputs["input_ids"],
                 attention_mask=inputs["attention_mask"],
                 max_new_tokens=1000,  # Adjusted max tokens
-                eos_token_id=tokenizer.eos_token_id,
-                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.pad_token_id,
                 do_sample=True,
                 num_beams=3,
                 temperature=0.7,
@@ -121,27 +143,113 @@ def generate_response_with_model(prompt, progress=None):
         if len(outputs[0]) <= start_index:
             response = ""
         else:
-            response = tokenizer.decode(
+            response = self.tokenizer.decode(
                 outputs[0][start_index:], skip_special_tokens=True
             ).strip()
 
         if progress:
             progress(1.0, "Done")
         return response
+
+
+class FairsenseCPURuntime(FairsenseRuntime):
+    def __init__(self):
+        super().__init__()
+        self.text_model_hf_id = "llama3.2"  # from ollama
+        self.ollama_client = ollama.Client()
+
+    def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
+        if progress:
+            progress(0.1, "Preparing prompt...")
+
+        if progress:
+            progress(0.3, "Generating response...")
+
+            # Generate response using Ollama
+        response = self.ollama_client.chat(
+            model=self.text_model_hf_id,
+            messages=[
+                {
+                    'role': 'user',
+                    'content': prompt
+                }
+            ],
+        )
+        if progress:
+            progress(0.7, "Processing response...")
+
+        # Extract the generated text from the response
+        generated_text = response['message']['content']
+
+        if progress:
+            progress(1.0, "Done")
+        return generated_text
+
+
+FAIRSENSE_RUNTIME: Optional[FairsenseRuntime] = None
+def initialize() -> None:
+    global FAIRSENSE_RUNTIME
+    if torch.cuda.is_available():
+        FAIRSENSE_RUNTIME = FairsenseGPURuntime()
+    else:
+        FAIRSENSE_RUNTIME = FairsenseCPURuntime()
+
+
+# Helper Functions
+def post_process_response(response: str) -> str:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
+    cleaned_response = ' '.join(response.split())
+    if len(cleaned_response.split()) > 50:
+        try:
+            summary = FAIRSENSE_RUNTIME.summarizer(cleaned_response, max_length=200, min_length=50, do_sample=False)
+            cleaned_response = summary[0]['summary_text']
+        except Exception as e:
+            cleaned_response = f"Error during summarization: {e}\nOriginal response: {cleaned_response}"
+
+    sentences = [sentence.strip() for sentence in cleaned_response.split('.')]
+    cleaned_response = '. '.join(sentences).strip() + ('.' if not cleaned_response.endswith('.') else '')
+    return f"<strong>Here is the analysis:</strong> {cleaned_response}"
+
+
+def highlight_bias(text: str, bias_words: List[str]) -> str:
+    # If no biased words, return the original text unaltered
+    if not bias_words:
+        return f"<div>{text}</div>"
+    # Highlight biased words in the text
+    for word in bias_words:
+        text = text.replace(word, f"<span style='color: red; font-weight: bold;'>{word}</span>")
+    return f"<div>{text}</div>"
+
+
+def generate_response_with_model(prompt: str, progress: Callable[[float, str], None] = None) -> str:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+    try:
+        return FAIRSENSE_RUNTIME.predict_with_text_model(prompt, progress)
     except Exception as e:
         if progress:
             progress(1.0, "Error occurred")
         return f"Error generating response: {e}"
 
+
 # Governance and Safety
-def ai_governance_response(prompt, progress=None):
+def ai_governance_response(prompt: str, progress: Callable[[float, str], None] = None) -> str:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     response = generate_response_with_model(
         f"Provide insights and recommendations on the following AI governance and safety topic:\n\n{prompt}",
-        progress=progress
+        progress=progress,
     )
     return post_process_response(response)
 
-def analyze_text_for_bias(text_input, progress=gr.Progress()):
+
+def analyze_text_for_bias(text_input: str, progress: gr.Progress = gr.Progress()) -> Tuple[str, str]:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     progress(0, "Initializing analysis...")  # Start the progress bar
 
     try:
@@ -158,7 +266,7 @@ def analyze_text_for_bias(text_input, progress=gr.Progress()):
         progress(0.3, "Generating response...")
         response = generate_response_with_model(
             prompt,
-            progress=lambda x, desc="": progress(0.3 + x * 0.4, desc)
+            progress=lambda x, desc="": progress(0.3 + x * 0.4, desc),
         )
 
         progress(0.7, "Post-processing response...")
@@ -175,7 +283,8 @@ def analyze_text_for_bias(text_input, progress=gr.Progress()):
         progress(1.0, "Analysis failed.")
         return f"Error: {e}", ""
 
-def preprocess_image(image):
+
+def preprocess_image(image: Image) -> Image:
     image = np.array(image)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     # Apply adaptive thresholding
@@ -187,14 +296,18 @@ def preprocess_image(image):
     thresh = cv2.medianBlur(thresh, 3)
     return Image.fromarray(thresh)
 
-def analyze_image_for_bias(image, progress=gr.Progress()):
+
+def analyze_image_for_bias(image: Image, progress=gr.Progress()) -> Tuple[str, str]:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     progress(0, "Initializing image analysis...")  # Start the progress bar
 
     try:
         time.sleep(0.1)  # Simulate delay
         progress(0.1, "Processing image...")
         image = image.convert("RGB")
-        inputs = blip_processor(images=image, return_tensors="pt").to(DEVICE)
+        inputs = FAIRSENSE_RUNTIME.blip_processor(images=image, return_tensors="pt").to(FAIRSENSE_RUNTIME.device)
 
         progress(0.2, "Extracting text from image...")
         # Preprocess image for better OCR results
@@ -204,8 +317,8 @@ def analyze_image_for_bias(image, progress=gr.Progress()):
 
         progress(0.3, "Generating caption...")
         with torch.no_grad():
-            caption_ids = blip_model.generate(**inputs, max_length=300, num_beams=5, temperature=0.7)
-        caption_text = blip_processor.tokenizer.decode(caption_ids[0], skip_special_tokens=True).strip()
+            caption_ids = FAIRSENSE_RUNTIME.blip_model.generate(**inputs, max_length=300, num_beams=5, temperature=0.7)
+        caption_text = FAIRSENSE_RUNTIME.blip_processor.tokenizer.decode(caption_ids[0], skip_special_tokens=True).strip()
 
         # Combine extracted text and caption
         combined_text = f"{caption_text}. {extracted_text}"
@@ -238,8 +351,12 @@ def analyze_image_for_bias(image, progress=gr.Progress()):
         progress(1.0, f"Analysis failed: {e}")
         return f"Error: {e}", ""
 
+
 # Batch Processing Functions
-def analyze_text_csv(file, output_filename="analysis_results.csv"):
+def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv") -> str:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     try:
         df = pd.read_csv(file.name)
         if "text" not in df.columns:
@@ -255,7 +372,7 @@ def analyze_text_csv(file, output_filename="analysis_results.csv"):
                     "text": highlighted_text,
                     "analysis": analysis
                 })
-            except Exception as  e:
+            except Exception as e:
                 results.append({
                     "row_index": i + 1,
                     # "original_text": text,
@@ -271,17 +388,18 @@ def analyze_text_csv(file, output_filename="analysis_results.csv"):
     except Exception as e:
         return f"Error processing CSV: {e}"
 
-import base64
-from io import BytesIO
 
-def analyze_images_batch(images, output_filename="image_analysis_results.csv"):
+def analyze_images_batch(images: List[str], output_filename: str = "image_analysis_results.csv") -> str:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     try:
         results = []
         for i, image_path in enumerate(images):
             try:
                 if not os.path.exists(image_path):
                     raise FileNotFoundError(f"Image file not found: {image_path}")
-                
+
                 image = Image.open(image_path)
                 highlighted_caption, analysis = analyze_image_for_bias(image)
 
@@ -314,34 +432,22 @@ def analyze_images_batch(images, output_filename="image_analysis_results.csv"):
     except Exception as e:
         return f"Error processing images: {e}"
 
-DEFAULT_DIRECTORY = "bias-results"
-os.makedirs(DEFAULT_DIRECTORY, exist_ok=True)
 
-def save_results_to_csv(df, filename="results.csv"):
-    file_path = os.path.join(DEFAULT_DIRECTORY, filename)  # Combine directory and filename
+def save_results_to_csv(df: pd.DataFrame, default_directory: str, filename: str = "results.csv") -> str:
+    file_path = os.path.join(default_directory, filename)  # Combine directory and filename
     try:
         df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
         return file_path  # Return the full file path for reference
     except Exception as e:
         return f"Error saving file: {e}"
 
-# Expanded AI Safety Risks Data
-ai_safety_risks = [
-    {"Risk": "Disinformation Spread", "Category": "Information Integrity", "Percentage": 20, "Severity": 8, "Likelihood": 7, "Impact": "High", "Description": "AI-generated content can spread false information rapidly.", "Mitigation": "Develop AI tools for fact-checking and verification."},
-    {"Risk": "Algorithmic Bias", "Category": "Fairness and Bias", "Percentage": 18, "Severity": 7, "Likelihood": 8, "Impact": "High", "Description": "AI systems may perpetuate or amplify societal biases.", "Mitigation": "Implement fairness-aware algorithms and diverse datasets."},
-    {"Risk": "Privacy Invasion", "Category": "Data Privacy", "Percentage": 15, "Severity": 6, "Likelihood": 6, "Impact": "Medium", "Description": "AI can infer personal information without consent.", "Mitigation": "Adopt privacy-preserving techniques like differential privacy."},
-    {"Risk": "Lack of Transparency", "Category": "Explainability", "Percentage": 12, "Severity": 5, "Likelihood": 5, "Impact": "Medium", "Description": "Complex models can be opaque, making decisions hard to understand.", "Mitigation": "Use explainable AI methods to increase transparency."},
-    {"Risk": "Security Vulnerabilities", "Category": "Robustness", "Percentage": 10, "Severity": 6, "Likelihood": 5, "Impact": "Medium", "Description": "AI systems may be susceptible to adversarial attacks.", "Mitigation": "Employ robust training methods and continuous monitoring."},
-    {"Risk": "Job Displacement", "Category": "Economic Impact", "Percentage": 8, "Severity": 7, "Likelihood": 6, "Impact": "High", "Description": "Automation may lead to loss of jobs in certain sectors.", "Mitigation": "Promote reskilling and education programs."},
-    {"Risk": "Ethical Dilemmas", "Category": "Ethics", "Percentage": 7, "Severity": 5, "Likelihood": 4, "Impact": "Medium", "Description": "AI may make decisions conflicting with human values.", "Mitigation": "Incorporate ethical guidelines into AI development."},
-    {"Risk": "Autonomous Weapons", "Category": "Physical Safety", "Percentage": 5, "Severity": 9, "Likelihood": 3, "Impact": "Critical", "Description": "AI could be used in weapons without human oversight.", "Mitigation": "Establish international regulations and oversight."},
-    {"Risk": "Environmental Impact", "Category": "Sustainability", "Percentage": 3, "Severity": 4, "Likelihood": 5, "Impact": "Low", "Description": "High energy consumption in AI training affects the environment.", "Mitigation": "Optimize models and use renewable energy sources."},
-    {"Risk": "Misuse for Surveillance", "Category": "Human Rights", "Percentage": 2, "Severity": 8, "Likelihood": 2, "Impact": "High", "Description": "AI can be used for mass surveillance violating privacy rights.", "Mitigation": "Enforce laws protecting individual privacy."},
-]
 
 # Function to display Enhanced AI Safety Dashboard
-def display_ai_safety_dashboard():
-    df = pd.DataFrame(ai_safety_risks)
+def display_ai_safety_dashboard() -> Tuple[Figure, Figure, Figure, pd.DataFrame]:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
+    df = pd.DataFrame(FAIRSENSE_RUNTIME.ai_safety_risks)
 
     # Bar Chart: Percentage Distribution of AI Risks
     fig_bar = px.bar(
@@ -391,8 +497,9 @@ def display_ai_safety_dashboard():
     # Return the figures and the DataFrame
     return fig_bar, fig_pie, fig_scatter, df
 
+
 # New Function: About Fairsense-AI
-def display_about_page():
+def display_about_page() -> str:
     about_html = """
     <style>
         .about-container {
@@ -459,7 +566,11 @@ def display_about_page():
     """
     return about_html
 
-def main():
+
+def start_server() -> None:
+    if FAIRSENSE_RUNTIME is None:
+        initialize()
+
     # Gradio Interface
     description = """
     <style>
@@ -473,14 +584,14 @@ def main():
             font-family: 'Arial', sans-serif; /* Clean, modern font */
             animation: glow 2s infinite; /* Glowing effect */
         }
-        
+
         .description {
             text-align: center; 
             font-size: 1.2em; 
             margin-bottom: 40px;
             color: #333;
         }
-        
+
         @keyframes glow {
             0% { text-shadow: 0 0 5px #4A90E2, 0 0 10px #4A90E2, 0 0 20px #4A90E2; }
             50% { text-shadow: 0 0 10px #4A90E2, 0 0 20px #4A90E2, 0 0 40px #4A90E2; }
@@ -492,8 +603,8 @@ def main():
     Fairsense-AI is an AI-driven platform for analyzing bias in textual and visual content.  
     It is designed to promote transparency, fairness, and equity in AI systems. 
     The platform is built to align with the principles of responsible AI, with a particular focus on fairness, bias, and sustainability. </div>
-    
-    
+
+
     <ul>
         <li><strong>Text Analysis:</strong> Detect biases in text, highlight problematic terms, and provide actionable feedback.</li>
         <li><strong>Image Analysis:</strong> Evaluate images for embedded text and captions for bias.</li>
@@ -511,7 +622,6 @@ def main():
         </div>
     """
 
-
     demo = gr.Blocks(css="""
         #ai-dashboard {
             padding: 20px;
@@ -527,8 +637,8 @@ def main():
             with gr.TabItem("📄 Text Analysis"):
                 with gr.Row():
                     text_input = gr.Textbox(
-                        lines=5, 
-                        placeholder="Enter text to analyze for bias", 
+                        lines=5,
+                        placeholder="Enter text to analyze for bias",
                         label="Text Input"
                     )
                     analyze_button = gr.Button("Analyze")
@@ -553,23 +663,11 @@ def main():
                     show_progress=True
                 )
 
-            # with gr.TabItem("🖼️ Image Analysis"):
-            #     with gr.Row():
-            #         image_input = gr.Image(type="pil", label="Upload Image")
-            #         analyze_image_button = gr.Button("Analyze")
-            #     highlighted_caption = gr.HTML(label="Highlighted Text and Caption")
-            #     image_analysis = gr.HTML(label="Detailed Analysis")
-            #     analyze_image_button.click(
-            #         analyze_image_for_bias,
-            #         inputs=image_input,
-            #         outputs=[highlighted_caption, image_analysis],
-            #         show_progress=True
-            #     )
             with gr.TabItem("🖼️ Image Analysis"):
                 with gr.Row():
                     image_input = gr.Image(type="pil", label="Upload Image")
                     analyze_image_button = gr.Button("Analyze")
-                
+
                 # Add example instructions with clickable download links
                 gr.Markdown("""
                 ### Example Images
@@ -577,17 +675,16 @@ def main():
                 - [Example 1](https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg)
                 - [Example 2](https://ichef.bbci.co.uk/news/1536/cpsprodpb/BB60/production/_115786974_d6bbf591-ea18-46b9-821b-87b8f8f6006c.jpg)
                 """)
-                
+
                 highlighted_caption = gr.HTML(label="Highlighted Text and Caption")
                 image_analysis = gr.HTML(label="Detailed Analysis")
-                
+
                 analyze_image_button.click(
                     analyze_image_for_bias,
                     inputs=image_input,
                     outputs=[highlighted_caption, image_analysis],
                     show_progress=True
                 )
-
 
             with gr.TabItem("📂 Batch Text CSV Analysis"):
                 with gr.Row():
@@ -653,7 +750,7 @@ def main():
                 governance_insights = gr.HTML(label="Governance Insights")
 
                 # Function to handle the input
-                def governance_topic_handler(selected_topic, custom_topic, progress=gr.Progress()):
+                def governance_topic_handler(selected_topic: str, custom_topic: str, progress: gr.Progress = gr.Progress()):
                     progress(0, "Starting...")
                     topic = custom_topic.strip() if custom_topic.strip() else selected_topic
                     if not topic:
@@ -671,7 +768,7 @@ def main():
                     governance_topic_handler,
                     inputs=[governance_dropdown, governance_input],
                     outputs=governance_insights,
-                    show_progress=True
+                    show_progress=True,
                 )
             with gr.TabItem("📊 AI Safety Risks Dashboard"):
                 fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
@@ -690,5 +787,6 @@ def main():
 
     demo.queue().launch(share=True)
 
+
 if __name__ == "__main__":
-    main()
+    start_server()
