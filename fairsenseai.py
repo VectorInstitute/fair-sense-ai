@@ -567,7 +567,7 @@ def display_about_page() -> str:
     return about_html
 
 
-def start_server() -> None:
+def start_server(make_public_url: bool = True) -> None:
     if FAIRSENSE_RUNTIME is None:
         initialize()
 
@@ -785,7 +785,7 @@ def start_server() -> None:
 
         gr.HTML(footer)
 
-    demo.queue().launch(share=True)
+    demo.queue().launch(share=make_public_url)
 
 
 if __name__ == "__main__":

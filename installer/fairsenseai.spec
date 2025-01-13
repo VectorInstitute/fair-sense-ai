@@ -1,17 +1,21 @@
 # -*- mode: python ; coding: utf-8 -*-
-import sys
-from os import path
-site_packages = next(p for p in sys.path if 'site-packages' in p)
+from PyInstaller.utils.hooks import collect_data_files
+
+datas = []
+datas += collect_data_files('gradio_client')
+datas += collect_data_files('gradio')
+
 
 a = Analysis(
-    ['../fairsenseai.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        (path.join(site_packages,'gradio'),'gradio'),
-        (path.join(site_packages,'gradio_client'),'gradio_client'),
-    ],
+    datas=datas,
     hiddenimports=['gradio', 'gradio_client'],
+    module_collection_mode={
+        'gradio': 'py',
+        'gradio_client': 'py',
+    },
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
