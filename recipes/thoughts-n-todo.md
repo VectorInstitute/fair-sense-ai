@@ -36,6 +36,8 @@ if len(response.split()) < 3 or response.endswith("...") or response[-1] not in 
 
 I updated the prompts. Can we provide more user control? We can supply implicit prompts but also allow users to input their own.
 
+4. **blip model**
+fixed blip model as it was not too elaborative.
 
 ## TO-DO: Allow User Control (TO-DO1)
  
@@ -75,3 +77,9 @@ we need to group similar ones.
 - Provide more user control by allowing users to input their own prompts.
 - Supply implicit prompts as a default option.
 
+#### **TD6: progress bars**
+progress bars do not work on image atleast first time, when we press second time, it does.
+
+#### **TD8: need to hide noise of OCR model**
+
+a woman holding two kittens in her hands. RENE SONS ‘ MASS \ ' tA AME RSSRY AG y oY : ‘SAY’. Ne NX NN AON WZ o> yy yee i.

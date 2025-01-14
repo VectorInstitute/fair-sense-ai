@@ -502,8 +502,8 @@ def analyze_image_for_bias(
 
         progress(0.6, "Analyzing combined text for bias...")
         prompt = (
-            f"Analyze the content of the uploaded image. Assess the content of the image for potential indications of bias, misinformation, disinformation, or satire. "
-            f"Consider the visual elements, symbols, and composition. Focus only on relevant details. Mention any specific groups that has been targetted (if any). "
+            f"Assess the content of the image for potential indications of bias, misinformation, disinformation, or satire. "
+            f"Focus only on relevant details. Mention any specific groups that has been targetted (if any). "
             f"Provide your response as a detailed yet concise analysis,highlighting any possible implications or messages conveyed. If no bias is found, state that the text appears unbiased.\n\n"
             f"Text:\n\"{combined_text}\""
         )
