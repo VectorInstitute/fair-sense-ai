@@ -445,22 +445,27 @@ def analyze_text_for_bias(
         return f"Error: {e}", ""
 
 
+# def preprocess_image(image: Image) -> Image:
+#     """
+#     Preprocesses the image to improve OCR results, including adaptive thresholding and median blur.
+#     """
+#     image = np.array(image)
+#     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+#     thresh = cv2.adaptiveThreshold(
+#         gray,
+#         255,
+#         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#         cv2.THRESH_BINARY,
+#         11,
+#         2
+#     )
+#     thresh = cv2.medianBlur(thresh, 3)
+#     return Image.fromarray(thresh)
+
 def preprocess_image(image: Image) -> Image:
-    """
-    Preprocesses the image to improve OCR results, including adaptive thresholding and median blur.
-    """
-    image = np.array(image)
-    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    thresh = cv2.adaptiveThreshold(
-        gray,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        11,
-        2
-    )
-    thresh = cv2.medianBlur(thresh, 3)
-    return Image.fromarray(thresh)
+    gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    image = cv2.medianBlur(gray, 3)
+    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB))
 
 
 def analyze_image_for_bias(
@@ -491,7 +496,7 @@ def analyze_image_for_bias(
         progress(0.3, "Generating caption...")
         with torch.no_grad():
             caption_ids = FAIRSENSE_RUNTIME.blip_model.generate(
-                **inputs, max_length=300, num_beams=5, temperature=0.7
+                **inputs, max_length=300, num_beams=5, temperature=0.4
             )
         caption_text = FAIRSENSE_RUNTIME.blip_processor.tokenizer.decode(
             caption_ids[0],

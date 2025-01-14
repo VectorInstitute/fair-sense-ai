@@ -28,16 +28,28 @@ When generating responses, there may be situations where the output appears trun
 The following snippet illustrates how incomplete responses are detected and adjusted:
 
 ```python
-# Handle incomplete responses
-if len(response.split()) < 3 or response.endswith("...") or response[-1] not in ".!?":
-    response += " (Warning: Response may be truncated. Consider increasing `max_new_tokens`.)"
+            warning_message = (
+                "<span style='color: black; font-style: italic;'>"
+                "(Note: The response is concise. Adjust `max_new_tokens` for additional details.)"
+                "</span>"
+            )
 ```
 4. **Prompts**
 
 I updated the prompts. Can we provide more user control? We can supply implicit prompts but also allow users to input their own.
 
-4. **blip model**
+5. **image resolution and blip model**
 fixed blip model as it was not too elaborative.
+i changed  image to get a colored to have clarity in caption generation
+
+```def preprocess_image(image: Image) -> Image:
+    gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    image = cv2.medianBlur(gray, 3)
+    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB))
+```
+
+6. **broken image functions**
+broke into 4 functions out of one to make change in one.
 
 ## TO-DO: Allow User Control (TO-DO1)
  
