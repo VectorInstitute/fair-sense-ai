@@ -32,6 +32,10 @@ The following snippet illustrates how incomplete responses are detected and adju
 if len(response.split()) < 3 or response.endswith("...") or response[-1] not in ".!?":
     response += " (Warning: Response may be truncated. Consider increasing `max_new_tokens`.)"
 ```
+4. **Prompts**
+
+I updated the prompts. Can we provide more user control? We can supply implicit prompts but also allow users to input their own.
+
 
 ## TO-DO: Allow User Control (TO-DO1)
  
@@ -65,3 +69,11 @@ the batch processing bar for image and text not showing a tqdm
 
 #### **TD4:** Fix the `tabs` 
 we need to group similar ones.
+
+## To Do
+
+#### **TD5:**Prompts**
+
+- Provide more user control by allowing users to input their own prompts.
+- Supply implicit prompts as a default option.
+
