@@ -22,5 +22,5 @@ To trigger a build of the installer, please run the following
 command from the root folder:
 
 ```shell
-pyinstaller installer/fairsenseai.spec -y
+./installer/make.sh
 ```
