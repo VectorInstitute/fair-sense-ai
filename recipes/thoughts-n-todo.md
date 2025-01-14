@@ -60,6 +60,8 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
 ```
 #### **TD3:** Fix the `batch processing progress bar, it is missing` 
 
+the batch processing bar for image and text not showing a tqdm
+
 
 #### **TD4:** Fix the `tabs` 
 we need to group similar ones.
