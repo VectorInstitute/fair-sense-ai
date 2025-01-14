@@ -21,11 +21,9 @@ Do we need to inform users about this? Has this issue occurred for you as well?
         repetition_penalty = 1.2
         early_stopping = True '''
 
-# Handling Incomplete Responses
 
+4. **Handling Incomplete Responses**
 When generating responses, there may be situations where the output appears truncated. For example, if the generated response is very short or ends with an ellipsis (`...`), it could indicate that the output is incomplete.
-
-## Example Code for Handling Incomplete Responses
 
 The following snippet illustrates how incomplete responses are detected and adjusted:
 
@@ -60,7 +58,8 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
         )
     return f"<div>{text}</div>"
 ```
-#### **TD3:** Fix the `tabs` 
+#### **TD3:** Fix the `batch processing progress bar, it is missing` 
+
+
+#### **TD4:** Fix the `tabs` 
 we need to group similar ones.
-
-
