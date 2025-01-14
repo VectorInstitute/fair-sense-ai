@@ -14,17 +14,29 @@ Do we need to inform users about this? Has this issue occurred for you as well?
 3. I changed hyperparameters for temp, max token, we need to make change n give control to users
       
       ```  max_length = 512
-        max_new_tokens = 100
+        max_new_tokens = 200
         temperature = 0.5
         num_beams = 5
         do_sample = False
         repetition_penalty = 1.2
         early_stopping = True '''
 
----
+# Handling Incomplete Responses
 
-### To-Do:
-#### **TD1:** Provide hyperparameter control to users:  
+When generating responses, there may be situations where the output appears truncated. For example, if the generated response is very short or ends with an ellipsis (`...`), it could indicate that the output is incomplete.
+
+## Example Code for Handling Incomplete Responses
+
+The following snippet illustrates how incomplete responses are detected and adjusted:
+
+```python
+# Handle incomplete responses
+if len(response.split()) < 3 or response.endswith("...") or response[-1] not in ".!?":
+    response += " (Warning: Response may be truncated. Consider increasing `max_new_tokens`.)"
+```
+
+## TO-DO: Allow User Control (TO-DO1)
+ 
 - **`max_length`:** Set to the model's limit (e.g., 1024 for GPT-2).  
 - **`max_new_tokens`:** Start small (e.g., 100) for faster responses, increase for longer outputs.  
 - **`temperature`:** Use 0.7 for creativity, or 0.1 for deterministic outputs.  
@@ -48,5 +60,7 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
         )
     return f"<div>{text}</div>"
 ```
-#### **TD3:** Fix the `highlight_bias` function:
+#### **TD3:** Fix the `tabs` 
+we need to group similar ones.
+
 

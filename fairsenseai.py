@@ -198,49 +198,72 @@ class FairsenseGPURuntime(FairsenseRuntime):
         ).to(self.device).eval()
         self.text_model.resize_token_embeddings(len(self.tokenizer))
 
+    
     def predict_with_text_model(
-        self, prompt: str, progress: Callable[[float, str], None] = None
+        self, 
+        prompt: str, 
+        progress: Callable[[float, str], None] = None,
+        max_length: int = 1024,
+        max_new_tokens: int = 200,  # Allow enough tokens for full response
+        temperature: float = 0.7,
+        num_beams: int = 3,
+        repetition_penalty: float = 1.2,
+        do_sample: bool = True,
+        early_stopping: bool = True
     ) -> str:
         if progress:
             progress(0.1, "Tokenizing prompt...")
+
+        # Tokenize the input prompt
         inputs = self.tokenizer(
             prompt,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
-            max_length=1024
+            max_length=max_length
         ).to(self.device)
 
         if progress:
             progress(0.3, "Generating response...")
+
+        # Generate output with safety checks
         with torch.no_grad():
             outputs = self.text_model.generate(
                 input_ids=inputs["input_ids"],
                 attention_mask=inputs["attention_mask"],
-                max_new_tokens=1000,
+                max_new_tokens=max_new_tokens,
                 eos_token_id=self.tokenizer.eos_token_id,
                 pad_token_id=self.tokenizer.pad_token_id,
-                do_sample=True,
-                num_beams=3,
-                temperature=0.7,
-                repetition_penalty=1.2,
-                early_stopping=True
+                temperature=temperature,
+                num_beams=num_beams,
+                do_sample=do_sample,
+                repetition_penalty=repetition_penalty,
+                early_stopping=early_stopping
             )
 
         if progress:
             progress(0.7, "Decoding output...")
 
+        # Decode the generated tokens
         start_index = inputs["input_ids"].shape[1]
-        if len(outputs[0]) <= start_index:
-            response = ""
-        else:
-            response = self.tokenizer.decode(
-                outputs[0][start_index:], skip_special_tokens=True
-            ).strip()
+        response = self.tokenizer.decode(
+            outputs[0][start_index:], skip_special_tokens=True
+        ).strip()
+
+                # Handle incomplete responses
+        if len(response.split()) < 3 or response.endswith("...") or response[-1] not in ".!?":
+            warning_message = (
+                " <span style='color: red; font-style: italic;'>"
+                "(Warning: Response may be truncated. Consider increasing `max_new_tokens`.)"
+                "</span>"
+            )
+            response += warning_message
 
         if progress:
             progress(1.0, "Done")
+
         return response
+
 
 
 class FairsenseCPURuntime(FairsenseRuntime):
