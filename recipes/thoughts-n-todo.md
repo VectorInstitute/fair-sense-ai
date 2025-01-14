@@ -11,6 +11,7 @@ Do we need to inform users about this? Has this issue occurred for you as well?
 2. **Model Performance Testing:**  
    - Tried `llama3.2-11B vision` but found it significantly slower compared to my previous approach with `llama`, `blip`, and `llama`.  
    - My goal was to replace OCR with `llama3.2` so we can use a single model for both image and text bias detection. I’ve documented this as a recipe for now but haven’t included it in the main toolkit.
+3. I changed hyperparameters for temp, max token, we need to make change n give control to users
 
 ---
 
