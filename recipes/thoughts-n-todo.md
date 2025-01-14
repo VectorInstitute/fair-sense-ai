@@ -70,9 +70,7 @@ the batch processing bar for image and text not showing a tqdm
 #### **TD4:** Fix the `tabs` 
 we need to group similar ones.
 
-## To Do
-
-#### **TD5:**Prompts**
+#### **TD5:Prompts**
 
 - Provide more user control by allowing users to input their own prompts.
 - Supply implicit prompts as a default option.
