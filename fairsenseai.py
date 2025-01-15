@@ -576,7 +576,12 @@ def display_about_page() -> str:
     return about_html
 
 
-def start_server(make_public_url: bool = True, allow_filesystem_access: bool = True) -> None:
+def start_server(
+    make_public_url: bool = True,
+    allow_filesystem_access: bool = True,
+    prevent_thread_lock: bool = False,
+    launch_browser_on_startup: bool = False,
+) -> None:
     if FAIRSENSE_RUNTIME is None:
         initialize(allow_filesystem_access=allow_filesystem_access)
 
@@ -794,7 +799,7 @@ def start_server(make_public_url: bool = True, allow_filesystem_access: bool = T
 
         gr.HTML(footer)
 
-    demo.queue().launch(share=make_public_url)
+    demo.queue().launch(share=make_public_url, prevent_thread_lock=prevent_thread_lock, inbrowser=launch_browser_on_startup)
 
 
 if __name__ == "__main__":
