@@ -48,8 +48,6 @@ i changed  image to get a colored to have clarity in caption generation
     return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB))
 ```
 
-6. **broken image functions**
-broke into 4 functions out of one to make change in one.
 
 ## TO-DO: Allow User Control (TO-DO1)
  
