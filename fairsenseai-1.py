@@ -171,6 +171,21 @@ class FairsenseRuntime(object):
     def predict_with_text_model(
         self, prompt: str, progress: Callable[[float, str], None] = None
     ) -> str:
+        """
+        Abstract method to predict text using the underlying model.
+
+        Parameters
+        ----------
+        prompt
+            The input prompt for the text model.
+        progress
+            A callback function to report progress.
+
+        Returns
+        ----------
+        str
+            The generated text response.
+        """
         raise NotImplementedError
 
 
@@ -387,6 +402,20 @@ def ai_governance_response(
     """
     Generates insights and recommendations on AI governance and safety topics,
     optionally summarizing the final output.
+
+    Parameters
+    ----------
+    prompt
+        The input topic or question on AI governance and safety.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
+
+    Returns
+    -------
+    str
+        The generated response with insights and recommendations on AI Governance and Safety.
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -406,6 +435,20 @@ def analyze_text_for_bias(
 ) -> Tuple[str, str]:
     """
     Analyzes text for bias and optionally summarizes the response.
+
+    Parameters
+    ----------
+    text_input
+        The input text to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
+
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the highlighted text with bias words and the detailed analysis.
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -464,6 +507,20 @@ def analyze_image_for_bias(
       1) Generating a caption via BLIP,
       2) Extracting text via OCR, and
       3) Checking for bias using the text model.
+
+    Parameters
+    ----------
+    image
+        The input image to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
+
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the highlighted text with bias words and the detailed analysis.
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -535,7 +592,22 @@ def analyze_text_csv(
     """
     Batch text analysis from a CSV file. We now accept a 'use_summarizer' toggle,
     which is passed to 'analyze_text_for_bias'.
-    """
+
+    Parameters
+    ----------
+    file
+        The input CSV file containing text data.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    output_filename
+        The filename to save the analysis results.
+
+    Returns
+    -------    
+    str
+        The HTML table of analysis results 
+    """     
+    # TODO Add details about where the csv file is stored 
     if FAIRSENSE_RUNTIME is None:
         initialize()
 
@@ -576,6 +648,20 @@ def analyze_images_batch(
     """
     Batch image analysis. We now accept a 'use_summarizer' toggle,
     which is passed to 'analyze_image_for_bias'.
+
+    Parameters
+    ----------
+    images
+        The list of images to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    output_filename
+        The filename to save the analysis results.
+
+    Returns
+    -------    
+    str
+        The HTML table of analysis results 
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
