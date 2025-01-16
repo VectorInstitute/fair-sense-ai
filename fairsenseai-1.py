@@ -517,7 +517,7 @@ def analyze_image_for_bias(
         # Extract any biased words
         bias_section = response.split("Biased words:")[-1].strip() if "Biased words:" in response else ""
         biased_words = [word.strip() for word in bias_section.split(",")] if bias_section else []
-        highlighted_text = highlight_bias(caption_text, biased_words)
+        highlighted_text = highlight_bias(caption_text, biased_words) # Displaying only caption_text instead of combined_text for clean output
 
         progress(1.0, "Analysis complete.")
         return highlighted_text, processed_response
