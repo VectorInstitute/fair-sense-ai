@@ -5,3 +5,4 @@ docs/build
 *.DS_Store
 *__pycache__*
 .gradio
+_autosummary
