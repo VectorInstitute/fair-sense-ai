@@ -28,11 +28,11 @@ class FairsenseRuntime(object):
     def __init__(self, allow_filesystem_access: bool = True):
         self.allow_filesystem_access = allow_filesystem_access
         if self.allow_filesystem_access:
-            print("Starting FairseseRuntime with file system access.")
+            print("Starting FairsenseRuntime with file system access.")
             self.default_directory = "bias-results"
             os.makedirs(self.default_directory, exist_ok=True)
         else:
-            print("Starting FairseseRuntime without file system access.")
+            print("Starting FairsenseRuntime without file system access.")
 
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

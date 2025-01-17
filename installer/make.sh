@@ -20,3 +20,10 @@ else
   echo "Unsupported operating system: $(uname)"
   exit 1
 fi
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo "Compressing MacOS app"
+  cd ./dist
+  tar czpvf FairSenseAI.app.tgz FairSenseAI.app
+  cd ..
+fi
