@@ -362,7 +362,7 @@ def post_process_response(response: str, use_summarizer: bool = True) -> str:
     return f"<strong>Here is the analysis:</strong> {cleaned_response}"
 
 
-def highlight_bias(text: str, bias_words: List[str]) -> str:
+def highlight_bias(text: str, bias_words: List[str]) -> str:  #Move to utils/format.py
     """
     Highlights bias words in the text with inline HTML styling.
     """
@@ -376,7 +376,7 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
     return f"<div>{text}</div>"
 
 
-def generate_response_with_model(
+def generate_response_with_model(                     #Move to utils/generate.py
     prompt: str,
     progress: Callable[[float, str], None] = None
 ) -> str:
@@ -488,7 +488,7 @@ def analyze_text_for_bias(
         return f"Error: {e}", ""
 
 
-def preprocess_image(image: Image) -> Image:
+def preprocess_image(image: Image) -> Image:              #Move to utils/image.py
     """
     Preprocesses the image for OCR and captioning.
     """
@@ -707,7 +707,7 @@ def analyze_images_batch(
         return f"Error processing images: {e}"
 
 
-def save_results_to_csv(
+def save_results_to_csv(                #Move to utils/file.py
     df: pd.DataFrame,
     default_directory: str,
     filename: str = "results.csv"
