@@ -1,3 +1,7 @@
 venv/
 .idea/
 bias-results/
+docs/build
+*.DS_Store
+*__pycache__*
+.gradio
