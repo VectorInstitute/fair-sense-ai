@@ -3,3 +3,5 @@ venv/
 bias-results/
 /dist/
 /build/
+/installer/make.log
+/__pycache__/

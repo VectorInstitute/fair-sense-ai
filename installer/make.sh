@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bashs
 
 set -e
 
@@ -14,6 +14,10 @@ if [ "$(uname)" == "Darwin" ]; then
 
 elif [[ "$(uname)" =~ ^MINGW64_NT-10.0 ]] || [[ "$(uname)" =~ ^MSYS_NT-10.0 ]]; then
   echo "Building Windows App"
+  echo "Logs can be located at installer\make.log"
+  
+  pyinstaller installer/fairsenseai-win.spec -y > installer/make.log 2>&1
+
 elif [ "$(uname)" == "Linux" ]; then
   echo "Building Linux App"
 else
