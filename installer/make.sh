@@ -28,6 +28,6 @@ fi
 if [[ "$(uname)" == "Darwin" ]]; then
   echo "Compressing MacOS app"
   cd ./dist
-  tar czpvf FairSenseAI.app.tgz FairSenseAI.app
+  tar czpvf FairSenseAI.tgz FairSenseAI
   cd ..
 fi
