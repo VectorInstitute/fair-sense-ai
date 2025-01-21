@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath("../../fairsenseai"))
 # -- Project information -----------------------------------------------------
 
 project = "fair-sense-ai"
-copyright = "2024, Vector AI Engineering"  # noqa: A001
+copyright = "2025, Vector AI Engineering"  # noqa: A001
 author = "Vector AI Engineering"
 
 
