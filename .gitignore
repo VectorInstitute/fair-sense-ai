@@ -1,3 +1,9 @@
 venv/
 .idea/
 bias-results/
+/dist/
+/build/
+/installer/make.log
+/__pycache__/
+/installer/__pycache__/
+
