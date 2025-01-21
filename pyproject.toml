@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fair-sense-ai"
-version = "0.0.1"
+version = "0.8.2"
 description = ""
 authors = ["Vector AI Engineering <ai_engineering@vectorinstitute.ai>"]
 license = "Apache-2.0"
