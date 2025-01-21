@@ -5,6 +5,7 @@ datas = []
 datas += collect_data_files('gradio')
 datas += collect_data_files('gradio_client')
 
+
 a = Analysis(
     ['main.py'],
     pathex=[],
