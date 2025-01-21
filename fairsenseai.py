@@ -25,7 +25,16 @@ class FairsenseRuntime(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, allow_filesystem_access: bool = True):
+        self.allow_filesystem_access = allow_filesystem_access
+        if self.allow_filesystem_access:
+            print("Starting FairsenseRuntime with file system access.")
+            self.default_directory = "bias-results"
+            os.makedirs(self.default_directory, exist_ok=True)
+        else:
+            print("Starting FairsenseRuntime without file system access.")
+
+
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.blip_model_id = "Salesforce/blip-image-captioning-base"
 
@@ -46,9 +55,6 @@ class FairsenseRuntime(object):
             print("Models loaded successfully.")
         except Exception as e:
             raise RuntimeError(f"Error loading models: {e}")
-
-        self.default_directory = "bias-results"
-        os.makedirs(self.default_directory, exist_ok=True)
 
         # Expanded AI Safety Risks Data
         self.ai_safety_risks = [
@@ -91,14 +97,26 @@ class FairsenseRuntime(object):
              "Mitigation": "Enforce laws protecting individual privacy."},
         ]
 
+    def save_results_to_csv(self, df: pd.DataFrame, filename: str = "results.csv") -> Optional[str]:
+        if not self.allow_filesystem_access:
+            print("[ERROR] Not saving results to CSV because filesystem access is not allowed.")
+            return None
+
+        file_path = os.path.join(self.default_directory, filename)  # Combine directory and filename
+        try:
+            df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
+            return file_path  # Return the full file path for reference
+        except Exception as e:
+            return f"Error saving file: {e}"
+
     @abstractmethod
     def predict_with_text_model(self, prompt: str, progress: Callable[[float, str], None] = None) -> str:
         raise NotImplementedError
 
 
 class FairsenseGPURuntime(FairsenseRuntime):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, allow_filesystem_access: bool = True):
+        super().__init__(allow_filesystem_access=allow_filesystem_access)
         self.text_model_hf_id = "unsloth/Llama-3.2-1B-Instruct"
         self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
         self.tokenizer.add_special_tokens({
@@ -153,8 +171,8 @@ class FairsenseGPURuntime(FairsenseRuntime):
 
 
 class FairsenseCPURuntime(FairsenseRuntime):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, allow_filesystem_access: bool = True):
+        super().__init__(allow_filesystem_access=allow_filesystem_access)
         self.text_model_hf_id = "llama3.2"  # from ollama
         self.ollama_client = ollama.Client()
 
@@ -187,12 +205,12 @@ class FairsenseCPURuntime(FairsenseRuntime):
 
 
 FAIRSENSE_RUNTIME: Optional[FairsenseRuntime] = None
-def initialize() -> None:
+def initialize(allow_filesystem_access: bool = True) -> None:
     global FAIRSENSE_RUNTIME
     if torch.cuda.is_available():
-        FAIRSENSE_RUNTIME = FairsenseGPURuntime()
+        FAIRSENSE_RUNTIME = FairsenseGPURuntime(allow_filesystem_access=allow_filesystem_access)
     else:
-        FAIRSENSE_RUNTIME = FairsenseCPURuntime()
+        FAIRSENSE_RUNTIME = FairsenseCPURuntime(allow_filesystem_access=allow_filesystem_access)
 
 
 # Helper Functions
@@ -383,7 +401,7 @@ def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv"
         result_df = pd.DataFrame(results)
         # Convert DataFrame to HTML table
         html_table = result_df.to_html(escape=False)  # escape=False to render HTML in cells
-        save_path = save_results_to_csv(result_df, output_filename)
+        save_path = FAIRSENSE_RUNTIME.save_results_to_csv(result_df, output_filename)
         return html_table
     except Exception as e:
         return f"Error processing CSV: {e}"
@@ -427,19 +445,10 @@ def analyze_images_batch(images: List[str], output_filename: str = "image_analys
         result_df = pd.DataFrame(results)
         # Convert DataFrame to HTML table
         html_table = result_df.to_html(escape=False)  # escape=False to render HTML content
-        save_path = save_results_to_csv(result_df, output_filename)
+        save_path = FAIRSENSE_RUNTIME.save_results_to_csv(result_df, output_filename)
         return html_table
     except Exception as e:
         return f"Error processing images: {e}"
-
-
-def save_results_to_csv(df: pd.DataFrame, default_directory: str, filename: str = "results.csv") -> str:
-    file_path = os.path.join(default_directory, filename)  # Combine directory and filename
-    try:
-        df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
-        return file_path  # Return the full file path for reference
-    except Exception as e:
-        return f"Error saving file: {e}"
 
 
 # Function to display Enhanced AI Safety Dashboard
@@ -567,9 +576,14 @@ def display_about_page() -> str:
     return about_html
 
 
-def start_server() -> None:
+def start_server(
+    make_public_url: bool = True,
+    allow_filesystem_access: bool = True,
+    prevent_thread_lock: bool = False,
+    launch_browser_on_startup: bool = False,
+) -> None:
     if FAIRSENSE_RUNTIME is None:
-        initialize()
+        initialize(allow_filesystem_access=allow_filesystem_access)
 
     # Gradio Interface
     description = """
@@ -785,7 +799,7 @@ def start_server() -> None:
 
         gr.HTML(footer)
 
-    demo.queue().launch(share=True)
+    demo.queue().launch(share=make_public_url, prevent_thread_lock=prevent_thread_lock, inbrowser=launch_browser_on_startup)
 
 
 if __name__ == "__main__":
