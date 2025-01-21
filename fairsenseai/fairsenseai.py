@@ -335,6 +335,18 @@ def post_process_response(response: str, use_summarizer: bool = True) -> str:
     """
     Post-processes the response by optionally summarizing if the text is long
     and returning formatted HTML.
+
+    Parameters
+    ----------
+    response
+        The generated response text.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+
+    Returns
+    -------
+    str
+        The post-processed response with HTML formatting.
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -397,11 +409,10 @@ def generate_response_with_model(                     #Move to utils/generate.py
 def ai_governance_response(
     prompt: str,
     use_summarizer: bool = True,  # <-- Summarizer toggle
-    progress: Callable[[float, str], None] = None
+    progress: Optional[Callable[[float, str], None]] = None
 ) -> str:
     """
-    Generates insights and recommendations on AI governance and safety topics,
-    optionally summarizing the final output.
+    Generates insights and recommendations on AI governance and safety topics.
 
     Parameters
     ----------
@@ -416,6 +427,10 @@ def ai_governance_response(
     -------
     str
         The generated response with insights and recommendations on AI Governance and Safety.
+
+    Example
+    -------
+    >>> ai_governance_response("Environment Impact of AI")
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -434,7 +449,7 @@ def analyze_text_for_bias(
     progress: gr.Progress = gr.Progress()
 ) -> Tuple[str, str]:
     """
-    Analyzes text for bias and optionally summarizes the response.
+    Analyzes a given text for bias and provides a detailed analysis.
 
     Parameters
     ----------
@@ -449,6 +464,10 @@ def analyze_text_for_bias(
     -------
     Tuple[str, str]
         A tuple containing the highlighted text with bias words and the detailed analysis.
+
+    Example
+    -------
+    >>> highlighted, analysis = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -503,10 +522,7 @@ def analyze_image_for_bias(
     progress=gr.Progress()
 ) -> Tuple[str, str]:
     """
-    Analyzes an uploaded image by:
-      1) Generating a caption via BLIP,
-      2) Extracting text via OCR, and
-      3) Checking for bias using the text model.
+    Analyzes an image for bias by extracting text using OCR and by generating image caption.
 
     Parameters
     ----------
@@ -521,6 +537,11 @@ def analyze_image_for_bias(
     -------
     Tuple[str, str]
         A tuple containing the highlighted text with bias words and the detailed analysis.
+
+    Example
+    -------
+    >>> image = Image.open("example.jpg")
+    >>> highlighted, analysis = analyze_image_for_bias(image, use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -587,11 +608,10 @@ def analyze_image_for_bias(
 def analyze_text_csv(
     file: TextIO,
     use_summarizer: bool,  # <--- Summarizer toggle for CSV
-    output_filename: str = "analysis_results.csv"
+    output_filename: Optional[str] = "analysis_results.csv"
 ) -> str:
     """
-    Batch text analysis from a CSV file. We now accept a 'use_summarizer' toggle,
-    which is passed to 'analyze_text_for_bias'.
+    Analyzes a CSV file containing multiple text entries for bias.
 
     Parameters
     ----------
@@ -605,7 +625,12 @@ def analyze_text_csv(
     Returns
     -------    
     str
-        The HTML table of analysis results 
+        The HTML table containing results of batch analysis. 
+
+    Examples
+    --------
+    >>> csv_file = open("data.csv", mode='r', newline='', encoding='utf-8')
+    >>> results_table_html = analyze_text_csv(csv_file, use_summarizer=True)
     """     
     # TODO Add details about where the csv file is stored 
     if FAIRSENSE_RUNTIME is None:
@@ -643,11 +668,10 @@ def analyze_text_csv(
 def analyze_images_batch(
     images: List[str],
     use_summarizer: bool,  # <--- Summarizer toggle for images
-    output_filename: str = "image_analysis_results.csv"
+    output_filename: Optional[str] = "image_analysis_results.csv"
 ) -> str:
     """
-    Batch image analysis. We now accept a 'use_summarizer' toggle,
-    which is passed to 'analyze_image_for_bias'.
+    Analyzes a batch of images for bias.
 
     Parameters
     ----------
@@ -661,7 +685,11 @@ def analyze_images_batch(
     Returns
     -------    
     str
-        The HTML table of analysis results 
+        The HTML table containing results of batch analysis.
+
+    Example
+    -------
+    >>> results_table_html = analyze_images_batch(["image1.jpg", "image2.png"], use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -726,7 +754,16 @@ def save_results_to_csv(                #Move to utils/file.py
 # AI Safety Dashboard
 def display_ai_safety_dashboard() -> Tuple[Figure, Figure, Figure, pd.DataFrame]:
     """
-    Creates Plotly visualizations and a DataFrame for AI safety risks.
+    Creates visualizations for AI safety risks.
+
+    Returns
+    -------
+    Tuple[Figure, Figure, Figure, pd.DataFrame]
+        A tuple containing the bar chart, pie chart, scatter plot, and the DataFrame of AI safety risks.
+
+    Example
+    -------
+    >>> fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
