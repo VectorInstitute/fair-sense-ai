@@ -5,3 +5,5 @@ bias-results/
 /build/
 /installer/make.log
 /__pycache__/
+/installer/__pycache__/
+
