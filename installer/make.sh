@@ -16,12 +16,12 @@ elif [[ "$(uname)" =~ ^MINGW64_NT-10.0 ]] || [[ "$(uname)" =~ ^MSYS_NT-10.0 ]]; 
   echo "Building Windows App"
   echo "Logs can be located at installer\make.log"
   
-  pyinstaller installer/fairsenseai-win.spec -y > installer/make.log 2>&1
+  pyinstaller installer/fairsenseai-win+linux.spec -y > installer/make.log 2>&1
 
 elif [ "$(uname)" == "Linux" ]; then
   echo "Building Linux App"
 
-  pyinstaller installer/fairsenseai-linux.spec -y
+  pyinstaller installer/fairsenseai-win+linux.spec -y
 
 else
   echo "Unsupported operating system: $(uname)"
