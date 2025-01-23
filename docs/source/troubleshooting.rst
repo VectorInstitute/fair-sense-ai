@@ -9,3 +9,9 @@ Troubleshooting
 
 - **GPU Support**:  
   Use the CUDA-compatible version of PyTorch for better performance.
+
+- **Ollama Model Loading**:
+  Ensure that the required model (llama3.2b) is downloaded and available in Ollama. Re-download if needed.
+
+- **Numpy Errors**:
+  Ensure that the required version of Numpy (v1.x) is installed.

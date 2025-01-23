@@ -58,3 +58,8 @@ Install the ``fair-sense-ai`` package using pip:
 .. code-block:: bash
 
    pip install fair-sense-ai
+
+Detailed Instructions on Local Inference & Setup
+------------------------------------------------
+
+Refer to `FairSense AI Tutorial <_static/attachment/FairSense_AI_Tutorial.pdf>`_ for detailed instructions on local inference and setup.
