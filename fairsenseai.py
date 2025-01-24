@@ -27,6 +27,7 @@ from transformers import (
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
+
 class FairsenseRuntime(object):
     """
     Base abstract class for runtime, containing common logic
@@ -42,7 +43,7 @@ class FairsenseRuntime(object):
         # Load Models
         print("Loading models...")
         try:
-            # Image Captioning Models
+            # Image Captioning
             self.blip_processor = BlipProcessor.from_pretrained(self.blip_model_id)
             self.blip_model = BlipForConditionalGeneration.from_pretrained(
                 self.blip_model_id
@@ -170,6 +171,21 @@ class FairsenseRuntime(object):
     def predict_with_text_model(
         self, prompt: str, progress: Callable[[float, str], None] = None
     ) -> str:
+        """
+        Abstract method to predict text using the underlying model.
+
+        Parameters
+        ----------
+        prompt
+            The input prompt for the text model.
+        progress
+            A callback function to report progress.
+
+        Returns
+        -------
+        str
+            The generated text response.
+        """
         raise NotImplementedError
 
 
@@ -319,6 +335,18 @@ def post_process_response(response: str, use_summarizer: bool = True) -> str:
     """
     Post-processes the response by optionally summarizing if the text is long
     and returning formatted HTML.
+
+    Parameters
+    ----------
+    response
+        The generated response text.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+
+    Returns
+    -------
+    str
+        The post-processed response with HTML formatting.
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -380,10 +408,29 @@ def generate_response_with_model(
 # Governance and Safety
 def ai_governance_response(
     prompt: str,
-    progress: Callable[[float, str], None] = None
+    use_summarizer: bool = True,  # <-- Summarizer toggle
+    progress: Optional[Callable[[float, str], None]] = None
 ) -> str:
     """
     Generates insights and recommendations on AI governance and safety topics.
+
+    Parameters
+    ----------
+    prompt
+        The input topic or question on AI governance and safety.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
+
+    Returns
+    -------
+    str
+        The generated response with insights and recommendations on AI Governance and Safety.
+
+    Example
+    -------
+    >>> ai_governance_response("Environment Impact of AI")
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -392,8 +439,8 @@ def ai_governance_response(
         f"Provide insights and recommendations on the following AI governance and safety topic:\n\n{prompt}",
         progress=progress
     )
-    # By default, we use summarizer here. Feel free to add a toggle similarly if needed.
-    return post_process_response(response, use_summarizer=True)
+    # Use summarizer toggle
+    return post_process_response(response, use_summarizer=use_summarizer)
 
 
 def analyze_text_for_bias(
@@ -402,7 +449,25 @@ def analyze_text_for_bias(
     progress: gr.Progress = gr.Progress()
 ) -> Tuple[str, str]:
     """
-    Analyzes text for bias and optionally summarizes the response.
+    Analyzes a given text for bias and provides a detailed analysis.
+
+    Parameters
+    ----------
+    text_input
+        The input text to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
+
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the highlighted text with bias words and the detailed analysis.
+
+    Example
+    -------
+    >>> highlighted, analysis = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -416,7 +481,7 @@ def analyze_text_for_bias(
         prompt = (
             f"Analyze the following text for bias. Be concise, focusing only on relevant details. "
             f"Mention specific phrases or language that contribute to bias, and describe the tone of the text. "
-            f"Mention who is the targeted group (if there is any group targetted) and what kind of bias it is. "
+            f"Mention who is the targeted group (if any). "
             f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased.\n\n"
             f"Text: \"{text_input}\""
         )
@@ -442,42 +507,46 @@ def analyze_text_for_bias(
         return f"Error: {e}", ""
 
 
-def preprocess_image(image: Image) -> Image:
-    """Preprocesses the image for OCR and captioning."""
+def preprocess_image(image: Image) -> Image:              #Move to utils/image.py
+    """
+    Preprocesses the image for OCR and captioning.
+    """
     gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     blurred = cv2.medianBlur(gray, 3)
     return Image.fromarray(cv2.cvtColor(blurred, cv2.COLOR_GRAY2RGB))
 
 
-###############################################################################
-#                          CORRECTED FUNCTION HERE                            #
-###############################################################################
 def analyze_image_for_bias(
-    image: Image, 
-    use_summarizer: bool, 
+    image: Image,
+    use_summarizer: bool,
     progress=gr.Progress()
 ) -> Tuple[str, str]:
     """
-    Analyzes an uploaded image by:
-      1) Generating a caption via BLIP,
-      2) Extracting text via OCR, and
-      3) Checking for bias using the text model.
+    Analyzes an image for bias by extracting text using OCR and by generating image caption.
 
-    Args:
-        image (Image): The uploaded PIL image.
-        use_summarizer (bool): Whether to run a summarizer on the final analysis.
-        progress (gr.Progress): Gradio progress callback.
+    Parameters
+    ----------
+    image
+        The input image to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    progress
+        A callback function to report progress.
 
-    Returns:
-        Tuple[str, str]: (highlighted_text, processed_response)
-                         The "highlighted_text" is the image's combined caption+OCR
-                         with any biased words highlighted, and "processed_response"
-                         is the model's analysis in HTML format.
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the highlighted text with bias words and the detailed analysis.
+
+    Example
+    -------
+    >>> image = Image.open("example.jpg")
+    >>> highlighted, analysis = analyze_image_for_bias(image, use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
 
-    progress(0, "Initializing image analysis...")  # Start the progress bar
+    progress(0, "Initializing image analysis...")
 
     try:
         time.sleep(0.1)  # Simulate delay
@@ -490,7 +559,6 @@ def analyze_image_for_bias(
         inputs = FAIRSENSE_RUNTIME.blip_processor(images=image, return_tensors="pt").to(FAIRSENSE_RUNTIME.device)
 
         progress(0.2, "Extracting text from image...")
-        # Preprocess image for better OCR results
         preprocessed_image = preprocess_image(image)
         extracted_text = pytesseract.image_to_string(preprocessed_image)
 
@@ -507,13 +575,12 @@ def analyze_image_for_bias(
             skip_special_tokens=True
         ).strip()
 
-        # Combine extracted text and caption
         combined_text = f"{caption_text}. {extracted_text}"
 
         progress(0.6, "Analyzing combined text for bias...")
         prompt = (
             f"Analyze the following image-related text for bias, mockery, misinformation, disinformation, "
-            f"misinformation, or satire. Mention any targeted group if found. "
+            f"or satire. Mention any targeted group if found. "
             f"If no bias is found, state that the image appears unbiased.\n\n"
             f"Text:\n\"{combined_text}\""
         )
@@ -523,15 +590,12 @@ def analyze_image_for_bias(
         )
 
         progress(0.9, "Post-processing response...")
-        # Pass the `use_summarizer` parameter
         processed_response = post_process_response(response, use_summarizer=use_summarizer)
 
-        # Extract biased words (if any)
+        # Extract any biased words
         bias_section = response.split("Biased words:")[-1].strip() if "Biased words:" in response else ""
         biased_words = [word.strip() for word in bias_section.split(",")] if bias_section else []
-
-        # Highlight biases in combined text
-        highlighted_text = highlight_bias(combined_text, biased_words)
+        highlighted_text = highlight_bias(caption_text, biased_words) # Displaying only caption_text instead of combined_text for clean output
 
         progress(1.0, "Analysis complete.")
         return highlighted_text, processed_response
@@ -541,12 +605,34 @@ def analyze_image_for_bias(
 
 
 # Batch Processing Functions
-def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv") -> str:
+def analyze_text_csv(
+    file: TextIO,
+    use_summarizer: bool,  # <--- Summarizer toggle for CSV
+    output_filename: Optional[str] = "analysis_results.csv"
+) -> str:
     """
-    Example of batch text analysis from a CSV file. If you also want
-    to toggle summarization here, you would add a parameter and pass
-    it to analyze_text_for_bias() as well.
-    """
+    Analyzes a CSV file containing multiple text entries for bias.
+
+    Parameters
+    ----------
+    file
+        The input CSV file containing text data.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    output_filename
+        The filename to save the analysis results.
+
+    Returns
+    -------    
+    str
+        The HTML table containing results of batch analysis. 
+
+    Examples
+    --------
+    >>> csv_file = open("data.csv", mode='r', newline='', encoding='utf-8')
+    >>> results_table_html = analyze_text_csv(csv_file, use_summarizer=True)
+    """     
+    # TODO Add details about where the csv file is stored 
     if FAIRSENSE_RUNTIME is None:
         initialize()
 
@@ -558,8 +644,7 @@ def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv"
         results = []
         for i, text in enumerate(df["text"]):
             try:
-                # Hard-coded to True for summarizer here, but you can add a toggle if needed
-                highlighted_text, analysis = analyze_text_for_bias(text, use_summarizer=True)
+                highlighted_text, analysis = analyze_text_for_bias(text, use_summarizer=use_summarizer)
                 results.append({
                     "row_index": i + 1,
                     "text": highlighted_text,
@@ -580,10 +665,31 @@ def analyze_text_csv(file: TextIO, output_filename: str = "analysis_results.csv"
         return f"Error processing CSV: {e}"
 
 
-def analyze_images_batch(images: List[str], output_filename: str = "image_analysis_results.csv") -> str:
+def analyze_images_batch(
+    images: List[str],
+    use_summarizer: bool,  # <--- Summarizer toggle for images
+    output_filename: Optional[str] = "image_analysis_results.csv"
+) -> str:
     """
-    Example of batch image analysis. If you also want to toggle summarization,
-    you can add a parameter and pass it to analyze_image_for_bias().
+    Analyzes a batch of images for bias.
+
+    Parameters
+    ----------
+    images
+        The list of images to analyze for bias.
+    use_summarizer
+        Whether to use the summarizer to condense the response.
+    output_filename
+        The filename to save the analysis results.
+
+    Returns
+    -------    
+    str
+        The HTML table containing results of batch analysis.
+
+    Example
+    -------
+    >>> results_table_html = analyze_images_batch(["image1.jpg", "image2.png"], use_summarizer=True)
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -596,15 +702,14 @@ def analyze_images_batch(images: List[str], output_filename: str = "image_analys
                     raise FileNotFoundError(f"Image file not found: {image_path}")
 
                 image = Image.open(image_path)
-                # Hard-coded to True for summarizer in batch mode
                 highlighted_caption, analysis = analyze_image_for_bias(
                     image,
-                    use_summarizer=True  # Set True or False as needed
+                    use_summarizer=use_summarizer
                 )
 
                 logging.info(f"Processing Image: {image_path}")
 
-                # Convert the image to base64 for HTML display
+                # Convert image to base64 for HTML display
                 buffered = BytesIO()
                 image.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -630,7 +735,7 @@ def analyze_images_batch(images: List[str], output_filename: str = "image_analys
         return f"Error processing images: {e}"
 
 
-def save_results_to_csv(
+def save_results_to_csv(                #Move to utils/file.py
     df: pd.DataFrame,
     default_directory: str,
     filename: str = "results.csv"
@@ -649,7 +754,16 @@ def save_results_to_csv(
 # AI Safety Dashboard
 def display_ai_safety_dashboard() -> Tuple[Figure, Figure, Figure, pd.DataFrame]:
     """
-    Creates Plotly visualizations and a DataFrame for AI safety risks.
+    Creates visualizations for AI safety risks.
+
+    Returns
+    -------
+    Tuple[Figure, Figure, Figure, pd.DataFrame]
+        A tuple containing the bar chart, pie chart, scatter plot, and the DataFrame of AI safety risks.
+
+    Example
+    -------
+    >>> fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
     """
     if FAIRSENSE_RUNTIME is None:
         initialize()
@@ -737,46 +851,43 @@ def display_about_page() -> str:
         <div class="technology-section">
             <h3>🔍 Autoregressive Decoder-only Language Model</h3>
             <p>
-                Fairsense-AI utilizes the LLMs in generating detailed analyses of textual content,
+                Fairsense-AI utilizes LLMs for generating detailed analyses of textual content,
                 detecting biases, and providing insights on AI governance topics.
             </p>
         </div>
         <div class="technology-section">
             <h3>🖼️  Image Captioning</h3>
             <p>
-                Image Captioning models like Blip are used for generating descriptive captions of images.
-                This aids in understanding the visual content and assessing it for potential biases or
+                Fairsense-AI uses Blip for generating descriptive captions of images.
+                This aids in understanding visual content and assessing it for biases or
                 sensitive elements.
             </p>
         </div>
         <div class="technology-section">
             <h3>🔤 Optical Character Recognition (OCR)</h3>
             <p>
-                Fairsense-AI employs OCR technology, specifically Tesseract OCR via the pytesseract library,
-                to extract text embedded within images. This allows the tool to analyze textual content that
-                appears within images, such as signs or documents.
+                Fairsense-AI employs Tesseract OCR to extract text from images, allowing
+                analysis of textual content embedded within images.
             </p>
         </div>
         <div class="technology-section">
             <h3>⚙️ Transformers and PyTorch</h3>
             <p>
-                The underlying models are built and run using the Transformers library by Hugging Face and
-                PyTorch. These libraries provide robust frameworks for NLP and deep learning tasks.
+                Transformers (Hugging Face) and PyTorch power the underlying models, ensuring
+                robust NLP and deep learning functionalities.
             </p>
         </div>
         <div class="technology-section">
             <h3>📊 Plotly for Data Visualization</h3>
             <p>
-                For creating interactive charts and visualizations in the AI Safety Risks Dashboard,
-                Fairsense-AI uses Plotly, a powerful graphing library that enables interactive and
-                informative visual representations of data.
+                Plotly is used for creating interactive charts in the AI Safety Risks Dashboard,
+                providing engaging and informative data visualizations.
             </p>
         </div>
         <div class="technology-section">
             <h3>💻 Gradio Interface</h3>
             <p>
-                Gradio is used to build the user interface of Fairsense-AI, providing an accessible and
-                user-friendly platform for interacting with the tool's functionalities.
+                Gradio offers a clean, user-friendly UI for interacting with the Fairsense-AI platform.
             </p>
         </div>
     </div>
@@ -872,7 +983,7 @@ def start_server() -> None:
                 gr.Examples(
                     examples=[
                         "Some people say that women are not suitable for leadership roles.",
-                        "Our hiring process is completely fair and unbiased and still we think male candidates are better based on intellect level."
+                        "Our hiring process is fair and unbiased, but we prefer male candidates for their intellect level."
                     ],
                     inputs=text_input,
                     label="Try some examples"
@@ -881,7 +992,6 @@ def start_server() -> None:
                 highlighted_text = gr.HTML(label="Highlighted Text")
                 detailed_analysis = gr.HTML(label="Detailed Analysis")
 
-                # Pass the checkbox value to analyze_text_for_bias
                 analyze_button.click(
                     analyze_text_for_bias,
                     inputs=[text_input, use_summarizer_checkbox_text],
@@ -911,7 +1021,6 @@ def start_server() -> None:
                 highlighted_caption = gr.HTML(label="Highlighted Text and Caption")
                 image_analysis = gr.HTML(label="Detailed Analysis")
 
-                # Here we pass both the image_input and the summarizer checkbox.
                 analyze_image_button.click(
                     analyze_image_for_bias,
                     inputs=[image_input, use_summarizer_checkbox_img],
@@ -926,11 +1035,18 @@ def start_server() -> None:
                         label="Upload Text CSV (with 'text' column)",
                         file_types=['.csv']
                     )
+                    # Summarizer toggle for batch text CSV
+                    use_summarizer_checkbox_text_csv = gr.Checkbox(
+                        value=True,
+                        label="Use Summarizer?"
+                    )
                     analyze_csv_button = gr.Button("Analyze CSV")
+
                 csv_results = gr.HTML(label="CSV Analysis Results")
+
                 analyze_csv_button.click(
                     analyze_text_csv,
-                    inputs=csv_input,
+                    inputs=[csv_input, use_summarizer_checkbox_text_csv],
                     outputs=csv_results,
                     show_progress=True
                 )
@@ -944,11 +1060,18 @@ def start_server() -> None:
                         type="filepath",
                         file_count="multiple"
                     )
+                    # Summarizer toggle for batch image
+                    use_summarizer_checkbox_img_batch = gr.Checkbox(
+                        value=True,
+                        label="Use Summarizer?"
+                    )
                     analyze_images_button = gr.Button("Analyze Images")
+
                 images_results = gr.HTML(label="Image Batch Analysis Results")
+
                 analyze_images_button.click(
                     analyze_images_batch,
-                    inputs=images_input,
+                    inputs=[images_input, use_summarizer_checkbox_img_batch],
                     outputs=images_results,
                     show_progress=True
                 )
@@ -981,12 +1104,18 @@ def start_server() -> None:
                         label="Custom Topic",
                         interactive=True
                     )
+                # Summarizer toggle for AI Governance
+                use_summarizer_checkbox_governance = gr.Checkbox(
+                    value=True,
+                    label="Use Summarizer?"
+                )
                 governance_button = gr.Button("Get Insights")
                 governance_insights = gr.HTML(label="Governance Insights")
 
                 def governance_topic_handler(
                     selected_topic: str,
                     custom_topic: str,
+                    use_summarizer: bool,
                     progress: gr.Progress = gr.Progress()
                 ):
                     progress(0, "Starting...")
@@ -994,9 +1123,12 @@ def start_server() -> None:
                     if not topic:
                         progress(1, "No topic selected")
                         return "Please select a topic from the dropdown or enter your own question."
+
                     progress(0.2, "Generating response...")
+                    # Pass the summarizer toggle
                     response = ai_governance_response(
                         topic,
+                        use_summarizer=use_summarizer,
                         progress=lambda x, desc="": progress(0.2 + x * 0.8, desc)
                     )
                     progress(1.0, "Done")
@@ -1004,7 +1136,7 @@ def start_server() -> None:
 
                 governance_button.click(
                     governance_topic_handler,
-                    inputs=[governance_dropdown, governance_input],
+                    inputs=[governance_dropdown, governance_input, use_summarizer_checkbox_governance],
                     outputs=governance_insights,
                     show_progress=True
                 )
@@ -1014,7 +1146,7 @@ def start_server() -> None:
                 fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
                 gr.Markdown("### Percentage Distribution of AI Safety Risks")
                 gr.Plot(fig_bar)
-                # If you'd like to show the pie chart, uncomment:
+                # If you'd like to show the pie chart, you can uncomment:
                 # gr.Markdown("### Proportion of Risk Categories")
                 # gr.Plot(fig_pie)
                 gr.Markdown("### Severity vs. Likelihood of AI Risks")
