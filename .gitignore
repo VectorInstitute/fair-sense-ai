@@ -1,4 +1,5 @@
 venv/
+env/
 .idea/
 bias-results/
 docs/build
@@ -8,3 +9,8 @@ quick_tutorial/data
 *__pycache__*
 .gradio
 _autosummary
+/dist/
+/build/
+/installer/make.log
+/__pycache__/
+/installer/__pycache__/

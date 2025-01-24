@@ -36,7 +36,16 @@ class FairsenseRuntime(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, allow_filesystem_access: bool = True):
+        self.allow_filesystem_access = allow_filesystem_access
+        if self.allow_filesystem_access:
+            print("Starting FairsenseRuntime with file system access.")
+            self.default_directory = "bias-results"
+            os.makedirs(self.default_directory, exist_ok=True)
+        else:
+            print("Starting FairsenseRuntime without file system access.")
+
+
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.blip_model_id = "Salesforce/blip-image-captioning-base"
 
@@ -59,9 +68,6 @@ class FairsenseRuntime(object):
             print("Models loaded successfully.")
         except Exception as e:
             raise RuntimeError(f"Error loading models: {e}")
-
-        self.default_directory = "bias-results"
-        os.makedirs(self.default_directory, exist_ok=True)
 
         # Expanded AI Safety Risks Data
         self.ai_safety_risks = [
@@ -167,9 +173,26 @@ class FairsenseRuntime(object):
             },
         ]
 
+    def save_results_to_csv(self, df: pd.DataFrame, filename: str = "results.csv") -> Optional[str]:
+        """
+        Saves a pandas DataFrame to a CSV file in the specified directory.
+        """
+        if not self.allow_filesystem_access:
+            print("[ERROR] Not saving results to CSV because filesystem access is not allowed.")
+            return None
+
+        file_path = os.path.join(self.default_directory, filename)  # Combine directory and filename
+        try:
+            df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
+            return file_path  # Return the full file path for reference
+        except Exception as e:
+            return f"Error saving file: {e}"
+
     @abstractmethod
     def predict_with_text_model(
-        self, prompt: str, progress: Callable[[float, str], None] = None
+        self,
+        prompt: str,
+        progress: Callable[[float, str], None] = None,
     ) -> str:
         """
         Abstract method to predict text using the underlying model.
@@ -195,8 +218,8 @@ class FairsenseGPURuntime(FairsenseRuntime):
     Loads and runs a Hugging Face model locally on GPU.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, allow_filesystem_access: bool = True):
+        super().__init__(allow_filesystem_access=allow_filesystem_access)
         self.text_model_hf_id = "unsloth/Llama-3.2-1B-Instruct"
         self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
         self.tokenizer.add_special_tokens(
@@ -285,8 +308,8 @@ class FairsenseCPURuntime(FairsenseRuntime):
     Uses Ollama to interface with local Llama-based models.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, allow_filesystem_access: bool = True):
+        super().__init__(allow_filesystem_access=allow_filesystem_access)
         self.text_model_hf_id = "llama3.2"  # from ollama
         self.ollama_client = ollama.Client()
 
@@ -317,17 +340,16 @@ class FairsenseCPURuntime(FairsenseRuntime):
 
 FAIRSENSE_RUNTIME: Optional[FairsenseRuntime] = None
 
-
-def initialize() -> None:
+def initialize(allow_filesystem_access: bool = True) -> None:
     """
     Initialize the global FAIRSENSE_RUNTIME with GPU if available;
     otherwise fallback to CPU runtime.
     """
     global FAIRSENSE_RUNTIME
     if torch.cuda.is_available():
-        FAIRSENSE_RUNTIME = FairsenseGPURuntime()
+        FAIRSENSE_RUNTIME = FairsenseGPURuntime(allow_filesystem_access=allow_filesystem_access)
     else:
-        FAIRSENSE_RUNTIME = FairsenseCPURuntime()
+        FAIRSENSE_RUNTIME = FairsenseCPURuntime(allow_filesystem_access=allow_filesystem_access)
 
 
 # Helper Functions
@@ -374,7 +396,7 @@ def post_process_response(response: str, use_summarizer: bool = True) -> str:
     return f"<strong>Here is the analysis:</strong> {cleaned_response}"
 
 
-def highlight_bias(text: str, bias_words: List[str]) -> str:  #Move to utils/format.py
+def highlight_bias(text: str, bias_words: List[str]) -> str:
     """
     Highlights bias words in the text with inline HTML styling.
     """
@@ -388,7 +410,7 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:  #Move to utils/for
     return f"<div>{text}</div>"
 
 
-def generate_response_with_model(                     #Move to utils/generate.py
+def generate_response_with_model(
     prompt: str,
     progress: Callable[[float, str], None] = None
 ) -> str:
@@ -507,7 +529,8 @@ def analyze_text_for_bias(
         return f"Error: {e}", ""
 
 
-def preprocess_image(image: Image) -> Image:              #Move to utils/image.py
+
+def preprocess_image(image: Image) -> Image:
     """
     Preprocesses the image for OCR and captioning.
     """
@@ -659,7 +682,7 @@ def analyze_text_csv(
 
         result_df = pd.DataFrame(results)
         html_table = result_df.to_html(escape=False)  # escape=False to render HTML in cells
-        save_path = save_results_to_csv(result_df, FAIRSENSE_RUNTIME.default_directory, output_filename)
+        save_path = FAIRSENSE_RUNTIME.save_results_to_csv(result_df, output_filename)
         return html_table
     except Exception as e:
         return f"Error processing CSV: {e}"
@@ -729,7 +752,7 @@ def analyze_images_batch(
 
         result_df = pd.DataFrame(results)
         html_table = result_df.to_html(escape=False)
-        save_path = save_results_to_csv(result_df, FAIRSENSE_RUNTIME.default_directory, output_filename)
+        save_path = FAIRSENSE_RUNTIME.save_results_to_csv(result_df, output_filename)
         return html_table
     except Exception as e:
         return f"Error processing images: {e}"
@@ -895,13 +918,18 @@ def display_about_page() -> str:
     return about_html
 
 
-def start_server() -> None:
+def start_server(
+    make_public_url: bool = True,
+    allow_filesystem_access: bool = True,
+    prevent_thread_lock: bool = False,
+    launch_browser_on_startup: bool = False,
+) -> None:
     """
     Starts the Gradio server with multiple tabs for text analysis, image analysis,
     batch processing, AI governance insights, and an AI safety risks dashboard.
     """
     if FAIRSENSE_RUNTIME is None:
-        initialize()
+        initialize(allow_filesystem_access=allow_filesystem_access)
 
     description = """
     <style>
@@ -947,8 +975,9 @@ def start_server() -> None:
         <div class="footer" style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc;">
             <p><i>"Responsible AI adoption for a better Sustainable world."</i></p>
             <p><strong>Disclaimer:</strong> The outputs generated by this platform are based on AI models and may vary depending on the input and contextual factors. While efforts are made to ensure accuracy and fairness, users should exercise discretion and validate critical information.</p>
-            <p>Contact Person: Shaina Raza, PhD, Vector Institute, email at <a href="mailto:shaina.raza@vectorinstitute.ai">shaina.raza@vectorinstitute.ai</a>.</p>
-        </div>
+<p>Developers: Shaina Raza, PhD, Vector Institute; Marelo Lotif; Mukund Sayeeganesh Chettiar.</p>
+        <p>Email for Shaina Raza: <a href='mailto:shaina.raza@torontomu.ca'>shaina.raza@vectorinstitute.ai</a>.</p>
+          </div>
     """
 
     demo = gr.Blocks(css="""
@@ -1160,7 +1189,7 @@ def start_server() -> None:
 
         gr.HTML(footer)
 
-    demo.queue().launch(share=True)
+    demo.queue().launch(share=make_public_url, prevent_thread_lock=prevent_thread_lock, inbrowser=launch_browser_on_startup)
 
 
 if __name__ == "__main__":

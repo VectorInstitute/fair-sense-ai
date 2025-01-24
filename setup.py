@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='fair_sense_ai',
-    version='0.1.6',
+    version='0.8.2',
     py_modules=['fairsenseai'],
     author='Shaina Raza, Phd',
     author_email='shaina.raza@torontomu.ca',
