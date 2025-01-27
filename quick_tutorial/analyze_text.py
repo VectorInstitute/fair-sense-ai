@@ -1,4 +1,4 @@
-from fairsenseai import analyze_text_for_bias
+from fairsenseai.analysis.bias import analyze_text_for_bias
 
 # Example input text to analyze for bias
 text_input = "Men are naturally better at decision-making, while women excel at emotional tasks."

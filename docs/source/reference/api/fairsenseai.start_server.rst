@@ -1,10 +1,10 @@
 .. role:: hidden
     :class: hidden-section
 
-########################
-Launching the Applicaton
-########################
+############
+Start Server
+############
 
-Starting the Gradio-powered user interface.
+Starts the Gradio-powered user interface.
 
-..autofunction:: fairsenseai.start_server
+.. autofunction:: fairsenseai.app.start_server

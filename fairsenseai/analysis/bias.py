@@ -1,3 +1,7 @@
+"""
+Functions for analyzing biases in text and images.
+"""
+
 import base64
 import logging
 import os

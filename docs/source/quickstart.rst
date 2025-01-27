@@ -5,7 +5,7 @@ Quickstart Code Examples
 
    .. code-block:: python
 
-      from fairsenseai import analyze_text_for_bias
+      from fairsenseai.analysis.bias import analyze_text_for_bias
 
       # Example input text to analyze for bias
       text_input = "Men are naturally better at decision-making, while women excel at emotional tasks."
@@ -24,27 +24,37 @@ Quickstart Code Examples
       import requests
       from PIL import Image
       from io import BytesIO
-      from fairsenseai import analyze_image_for_bias
+      from IPython.display import display, HTML
+      from fairsenseai.analysis.bias import analyze_image_for_bias
 
-      # URL of the image to analyze
-      image_url = "https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg"
+      # URL of the image to analyze.
+      image_url = "https://ichef.bbci.co.uk/news/1536/cpsprodpb/BB60/production/_115786974_d6bbf591-ea18-46b9-821b-87b8f8f6006c.jpg"
 
-      # Fetch and load the image
+      # Fetch and load the image from the URL.
       response = requests.get(image_url)
-      image = Image.open(BytesIO(response.content))
+      if response.status_code == 200:
+         image = Image.open(BytesIO(response.content))
+         small_image = image.copy()
+         small_image.thumbnail((200, 200))
 
-      # Analyze the image for bias
-      highlighted_caption, image_analysis = analyze_image_for_bias(image, use_summarizer=True)
+         # Display the resized image and analyze for bias.
+         print("Original Image (Resized):")
+         display(small_image)
+         highlighted_caption, image_analysis = analyze_image_for_bias(image, use_summarizer=True)
 
-      # Print the analysis results
-      print("Highlighted Caption:", highlighted_caption)
-      print("Image Analysis:", image_analysis)
+         # Print and display analysis results.
+         print("\nHighlighted Caption:\n", highlighted_caption)
+         print("\nImage Analysis:\n", image_analysis)
+         if highlighted_caption:
+            display(HTML(highlighted_caption))
+else:
+    print(f"Failed to fetch the image. Status code: {response.status_code}")
 
 3. **Insights on AI Governance & Safety**
 
    .. code-block:: python
 
-      from fairsenseai import ai_governance_response
+      from fairsenseai.analysis.ai_governance import ai_governance_response
 
       # Get insights on topics related to AI governance and safety
       insights = ai_governance_response("AI Bias Mitigation Strategies")
@@ -56,7 +66,7 @@ Quickstart Code Examples
 
    .. code-block:: python
 
-      from fairsenseai import start_server
+      from fairsenseai.app import start_server
 
       # Launch the Gradio application (will open in the browser)
       start_server()

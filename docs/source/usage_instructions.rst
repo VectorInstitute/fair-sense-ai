@@ -7,7 +7,7 @@ Run the following command to start Fair-Sense-AI:
 
 .. code-block:: bash
 
-   fair-sense-AI
+   fairsenseai
 
 This will launch the Gradio-powered interface in your default web browser.
 

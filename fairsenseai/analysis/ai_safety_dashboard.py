@@ -1,3 +1,7 @@
+"""
+Tool to visualize AI safety risks and mitigation strategies.
+"""
+
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objs import Figure

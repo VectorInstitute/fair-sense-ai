@@ -1,4 +1,4 @@
-from fairsenseai import analyze_images_batch
+from fairsenseai.analysis.bias import analyze_images_batch
 
 # List of image paths to analyze
 image_paths = [

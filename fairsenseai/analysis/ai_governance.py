@@ -1,3 +1,7 @@
+"""
+Tool to generate insights and recommendations on AI governance and safety topics.
+"""
+
 from typing import Callable
 
 from fairsenseai.model_inference import generate_response_with_model
