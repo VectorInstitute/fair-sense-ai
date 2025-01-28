@@ -124,7 +124,7 @@ def start_server(
     >>> start_server()
     """
     # Initialize the runtime
-    get_runtime() #TO_CHECK
+    get_runtime()
 
     description = """
     <style>
