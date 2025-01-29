@@ -4,7 +4,7 @@ Tool to generate insights and recommendations on AI governance and safety topics
 
 from typing import Callable
 
-from fairsenseai.model_inference import generate_response_with_model
+from fairsenseai.runtime import generate_response_with_model
 from fairsenseai.utils.helper import post_process_response
 
 def ai_governance_response(
@@ -33,10 +33,6 @@ def ai_governance_response(
     -------
     >>> ai_governance_response("Environment Impact of AI")
     """
-    # TO_CHECK: Do we need to initialize the runtime here?
-    # if FAIRSENSE_RUNTIME is None:
-    #     initialize()
-
     response = generate_response_with_model(
         f"Provide insights and recommendations on the following AI governance and safety topic:\n\n{prompt}",
         progress=progress

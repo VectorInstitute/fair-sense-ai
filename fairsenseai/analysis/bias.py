@@ -15,7 +15,7 @@ import pytesseract
 import torch
 import gradio as gr
 
-from fairsenseai.model_inference import generate_response_with_model, get_runtime
+from fairsenseai.runtime import generate_response_with_model, get_runtime
 from fairsenseai.utils.helper import highlight_bias, post_process_response, preprocess_image
 
 def analyze_text_for_bias(

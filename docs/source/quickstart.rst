@@ -47,8 +47,8 @@ Quickstart Code Examples
          print("\nImage Analysis:\n", image_analysis)
          if highlighted_caption:
             display(HTML(highlighted_caption))
-else:
-    print(f"Failed to fetch the image. Status code: {response.status_code}")
+         else:
+            print(f"Failed to fetch the image. Status code: {response.status_code}")
 
 3. **Insights on AI Governance & Safety**
 

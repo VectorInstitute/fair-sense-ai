@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from fairsenseai.model_inference import get_runtime
+from fairsenseai.runtime import get_runtime
 
 def post_process_response(response: str, use_summarizer: Optional[bool] = True) -> str:
     """

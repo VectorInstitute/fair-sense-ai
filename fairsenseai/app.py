@@ -10,7 +10,7 @@ from fairsenseai.analysis.bias import (
     analyze_text_csv,
     analyze_text_for_bias,
 )
-from fairsenseai.model_inference import get_runtime
+from fairsenseai.runtime import get_runtime
 
 def display_about_page() -> str:
     """
