@@ -22,6 +22,6 @@ In order to build the documentation, install the documentation
 dependencies as mentioned in the previous section, navigate to 
 the docs folder and run the command:
 
-```
+```shell
 make html
 ```

@@ -28,7 +28,7 @@ author = "Vector AI Engineering"
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named 'sphinx.ext.*') or custom
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
@@ -56,12 +56,6 @@ autosectionlabel_prefix_document = True
 copybutton_prompt_text = r">>> |\.\.\. "
 copybutton_prompt_is_regexp = True
 
-
-# apidoc_module_dir = "../../aieng_temp"
-# apidoc_excluded_paths = ["tests"]
-# apidoc_output_dir = "reference/api"
-# apidoc_separate_modules = True
-# apidoc_extra_args = ["-f", "-M", "-T", "--implicit-namespaces"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3.9/", None),
@@ -98,6 +92,7 @@ html_theme_options = {
         "color-brand-content": "#eb088a",
         "color-foreground-secondary": "#52c7de",
     },
+    # TODO: To be uncommented when the repo is public
     # "footer_icons": [
     #     {
     #         "name": "GitHub",
