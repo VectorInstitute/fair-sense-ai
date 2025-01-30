@@ -175,14 +175,16 @@ def start_server(
           </div>
     """
 
-    demo = gr.Blocks(css="""
+    demo = gr.Blocks(
+        css="""
         #ai-dashboard {
             padding: 20px;
         }
         .gradio-container {
             background-color: #ffffff;
         }
-    """)
+        """
+    )
 
     with demo:
         gr.HTML(description)
