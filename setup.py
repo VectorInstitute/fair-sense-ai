@@ -1,11 +1,11 @@
 # setup.py
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='fair_sense_ai',
-    version='0.8.2',
-    py_modules=['fairsenseai'],
+    version='0.8.3',
+    packages=find_packages(),
     author='Shaina Raza, Phd',
     author_email='shaina.raza@torontomu.ca',
     description='An AI-driven platform for analyzing bias in text and images.',
@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fairsenseai=fairsenseai:start_server',
+            'fairsenseai=fairsenseai.app:start_server',
         ],
     },
     classifiers=[

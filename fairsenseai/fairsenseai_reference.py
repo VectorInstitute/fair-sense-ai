@@ -758,22 +758,6 @@ def analyze_images_batch(
         return f"Error processing images: {e}"
 
 
-def save_results_to_csv(                #Move to utils/file.py
-    df: pd.DataFrame,
-    default_directory: str,
-    filename: str = "results.csv"
-) -> str:
-    """
-    Saves a pandas DataFrame to a CSV file in the specified directory.
-    """
-    file_path = os.path.join(default_directory, filename)
-    try:
-        df.to_csv(file_path, index=False)
-        return file_path
-    except Exception as e:
-        return f"Error saving file: {e}"
-
-
 # AI Safety Dashboard
 def display_ai_safety_dashboard() -> Tuple[Figure, Figure, Figure, pd.DataFrame]:
     """

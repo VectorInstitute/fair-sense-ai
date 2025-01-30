@@ -1,4 +1,4 @@
-from fairsenseai import analyze_text_csv
+from fairsenseai.analysis.bias import analyze_text_csv
 
 # Loading the csv file
 csv_file = open("data/text.csv", mode='r', newline='', encoding='utf-8')

@@ -1,7 +1,7 @@
 import requests
 from PIL import Image
 from io import BytesIO
-from fairsenseai import analyze_image_for_bias
+from fairsenseai.analysis.bias import analyze_image_for_bias
 
 # URL of the image to analyze
 image_url = "https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg"

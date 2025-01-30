@@ -27,7 +27,7 @@ Highlights
 - 🌱 **Green AI**: Optimized energy use of LLMs to reduce environmental impact.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
    installation

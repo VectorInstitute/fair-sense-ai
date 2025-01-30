@@ -14,3 +14,4 @@ _autosummary
 /installer/make.log
 /__pycache__/
 /installer/__pycache__/
+package/

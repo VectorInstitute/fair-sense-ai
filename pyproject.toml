@@ -7,6 +7,9 @@ license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/VectorInstitute/fair-sense-ai"
 documentation = "https://vectorinstitute.github.io/FairSense-AI/"
+packages = [
+    { include = "fairsenseai" },
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache-2.0 License",

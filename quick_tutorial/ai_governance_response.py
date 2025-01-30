@@ -1,4 +1,4 @@
-from fairsenseai import ai_governance_response
+from fairsenseai.analysis.ai_governance import ai_governance_response
 
 # Get insights on ethical & responsible AI practices
 insights = ai_governance_response("What are the key considerations for AI ethics?")

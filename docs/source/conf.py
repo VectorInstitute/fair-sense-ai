@@ -14,7 +14,7 @@ import os
 import sys
 from typing import List
 
-
+sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath("../../fairsenseai"))
 
 
@@ -55,6 +55,7 @@ add_module_names = False
 autosectionlabel_prefix_document = True
 copybutton_prompt_text = r">>> |\.\.\. "
 copybutton_prompt_is_regexp = True
+add_module_names = False
 
 
 intersphinx_mapping = {
