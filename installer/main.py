@@ -9,7 +9,7 @@ if __name__ == "__main__":
     import tkinter as tk
     import webbrowser
 
-    from fairsenseai import start_server
+    from fairsenseai.app import start_server
 
     start_server(
         make_public_url=False,
