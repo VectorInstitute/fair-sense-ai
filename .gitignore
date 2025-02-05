@@ -1,9 +1,17 @@
 venv/
+env/
 .idea/
 bias-results/
+docs/build
+docs/build copy
+quick_tutorial/data
+*.DS_Store
+*__pycache__*
+.gradio
+_autosummary
 /dist/
 /build/
 /installer/make.log
 /__pycache__/
 /installer/__pycache__/
-
+package/
