@@ -64,7 +64,7 @@ pip install fair-sense-ai
 #### **1. Text Bias Analysis**
 
 ```python
-from fairsenseai import analyze_text_for_bias
+from fairsenseai.analysis.bias import analyze_text_for_bias
 
 # Example input text to analyze for bias
 text_input = "Men are naturally better at decision-making, while women excel at emotional tasks."
@@ -83,7 +83,7 @@ print("Detailed Analysis:", detailed_analysis)
 import requests
 from PIL import Image
 from io import BytesIO
-from fairsenseai import analyze_image_for_bias
+from fairsenseai.analysis.bias import analyze_image_for_bias
 
 # URL of the image to analyze
 image_url = "https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg"
@@ -103,7 +103,7 @@ print("Image Analysis:", image_analysis)
 #### **3. Launch the Interactive Application**
 
 ```python
-from fairsenseai import start_server
+from fairsenseai.app import start_server
 
 # Launch the Gradio application (will open in the browser)
 start_server()
