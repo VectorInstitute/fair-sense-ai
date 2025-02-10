@@ -24,6 +24,7 @@ FairSense-AI is a cutting-edge, AI-driven platform designed to promote transpare
 Highlights
 ----------
 - 🔍 **Bias Analysis**: Tools to identify and analyze bias in text and images.
+- ⚠️ **AI Risk Management**: Identifies potential AI risks and provides  structured risk assessments and mitigation strategies 
 - 🌱 **Green AI**: Optimized energy use of LLMs to reduce environmental impact.
 
 .. toctree::
@@ -34,7 +35,8 @@ Highlights
    quickstart
    tutorial
    usage_instructions
-   troubleshooting
-   contact
-   license
+   ai_risk_management
    api
+   troubleshooting
+   license
+   contact
