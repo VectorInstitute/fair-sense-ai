@@ -34,8 +34,8 @@ Features
    - Upload multiple images in the **Batch Image Analysis** tab.
    - Click **Analyze Images** for a detailed review.
 
-5. **AI Governance Insights**
+5. **AI Risk Management**
 
-   - Navigate to the **AI Governance and Safety** tab.
+   - Navigate to the **AI Risk Management** tab.
    - Choose a predefined topic or input your own query.
    - Click **Get Insights** for recommendations.

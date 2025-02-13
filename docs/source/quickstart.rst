@@ -50,17 +50,17 @@ Quickstart Code Examples
          else:
             print(f"Failed to fetch the image. Status code: {response.status_code}")
 
-3. **Insights on AI Governance & Safety**
+3. **AI Risk Management**
 
    .. code-block:: python
 
       from fairsenseai.analysis.ai_governance import ai_governance_response
 
-      # Get insights on topics related to AI governance and safety
+      # Get insights and risk assessment on selected topics
       insights = ai_governance_response("AI Bias Mitigation Strategies")
 
       # Print the result
-      print("AI Governance & Safety Insights:", insights)
+      print("Insights and risk assessment:", insights)
 
 4. **Launch the Interactive Application**
 
