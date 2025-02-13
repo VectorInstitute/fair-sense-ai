@@ -60,7 +60,7 @@ Quickstart Code Examples
       insights = ai_governance_response("AI Bias Mitigation Strategies")
 
       # Print the result
-      print("AI Governance & Safety Insights:", insights)
+      print("Insights and risk assessment:", insights)
 
 4. **Launch the Interactive Application**
 
