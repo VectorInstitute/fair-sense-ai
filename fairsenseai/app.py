@@ -10,7 +10,10 @@ from fairsenseai.analysis.bias import (
     analyze_text_csv,
     analyze_text_for_bias,
 )
+from fairsenseai.analysis.risk_with_embedding import analyze_text_for_risks
 from fairsenseai.runtime import get_runtime
+import pandas as pd
+
 
 def display_about_page() -> str:
     """
@@ -176,14 +179,14 @@ def start_server(
     """
 
     demo = gr.Blocks(
-        css="""
-        #ai-dashboard {
-            padding: 20px;
-        }
-        .gradio-container {
-            background-color: #ffffff;
-        }
-        """
+        # css="""
+        # #ai-dashboard {
+        #     padding: 20px;
+        # }
+        # .gradio-container {
+        #     background-color: #ffffff;
+        # }
+        # """
     )
 
     with demo:
@@ -222,6 +225,44 @@ def start_server(
                     analyze_text_for_bias,
                     inputs=[text_input, use_summarizer_checkbox_text],
                     outputs=[highlighted_text, detailed_analysis],
+                    show_progress=True
+                )
+
+            with gr.TabItem("📄 Risk Assessment"):
+                with gr.Row():
+                    text_input = gr.Textbox(
+                        lines=5,
+                        placeholder="Enter text to analyze for bias",
+                        label="Text Input"
+                    )
+                    # Summarizer toggle for text analysis
+                    # use_summarizer_checkbox_text = gr.Checkbox(
+                    #     value=True,
+                    #     label="Use Summarizer?"
+                    # )
+                    analyze_button = gr.Button("Analyze")
+
+                # Examples
+                gr.Examples(
+                    examples=[
+                        "Our team is creating a healthcare chatbot that analyzes patient symptoms using electronic "
+                        "health records. It provides early diagnoses, treatment advice, and can access sensitive "
+                        "patient information. We must handle data security, privacy, and potential misdiagnoses.",
+                        "We’re building an AI-powered facial recognition tool to improve workplace security. "
+                        "It will monitor employee entrances, verify identities in real-time, and store face embeddings."
+                        " The system must comply with privacy regulations and handle sensitive biometrics."
+                    ],
+                    inputs=text_input,
+                    label="Try some examples"
+                )
+
+                highlighted_text = gr.HTML(label="Highlighted Text")
+                csv_output_file = gr.File(label="Download Detailed Results in CSV")
+
+                analyze_button.click(
+                    analyze_text_for_risks,
+                    inputs=text_input,
+                    outputs=[highlighted_text, csv_output_file],
                     show_progress=True
                 )
 
@@ -386,7 +427,10 @@ def start_server(
 
         gr.HTML(footer)
 
-    demo.queue().launch(share=make_public_url, prevent_thread_lock=prevent_thread_lock, inbrowser=launch_browser_on_startup)
+    demo.queue().launch(share=make_public_url,
+                        prevent_thread_lock=prevent_thread_lock,
+                        inbrowser=launch_browser_on_startup,
+                        allowed_paths=['../user_risk_results'])
 
 
 if __name__ == "__main__":

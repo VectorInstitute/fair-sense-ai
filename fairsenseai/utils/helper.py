@@ -5,6 +5,37 @@ import numpy as np
 from PIL import Image
 
 from fairsenseai.runtime import get_runtime
+import pandas as pd
+import re
+
+
+def row_to_text(row, mode='risk'):
+    if mode == 'risk':
+        return f"Risk Category: {row['RiskCategory']} | Risk Description: {row['RiskDescription']}"
+    if mode == 'ai_rmf':
+        # return (f"Section Name: {row['section_name']} | Short Description: {row['short_description']} "
+        #         f"| About: {row['short_description']} | Suggested Actions: {row['suggested_actions']}")
+        return f"Short Description: {row['short_description']} | About: {row['short_description']}"
+
+
+def extract_hashtag_integers(text):
+    """
+    Extract all integers that are preceded by '#' from a text string.
+
+    Args:
+        text (str): Input text containing numbers with hashtags
+
+    Returns:
+        list: Array of integers that were preceded by '#'
+    """
+
+    integers = re.findall(r'-?\d+', text)
+
+    # Convert strings to integers
+    integers = [str(num) for num in integers]
+
+    return integers
+
 
 def post_process_response(response: str, use_summarizer: Optional[bool] = True) -> str:
     """
@@ -71,6 +102,104 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
             f"<span style='color: red; font-weight: bold;'>{word}</span>"
         )
     return f"<div>{text}</div>"
+
+
+def style_risks(df: pd.DataFrame) -> str:
+    """
+    Generates HTML output highlighting specified risk IDs.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing risk information with columns 'RiskID' and 'RiskDescription'
+
+    Returns
+    -------
+    str
+        HTML formatted string with styled risk entries
+
+    Examples
+    --------
+    >>> risks_df = pd.DataFrame({
+    ...     'RiskID': [1, 2, 3],
+    ...     'RiskDescription': ['Privacy risk', 'Security risk', 'Bias risk']
+    ... })
+    >>> style_risks(risks_df)
+    '<ul><li style="color:red; font-weight:bold;">Risk #1: Privacy risk</li>
+    <li style="color:red; font-weight:bold;">Risk #3: Bias risk</li></ul>'
+    """
+
+    styles = """
+    <style>
+        .risk-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+        }
+        .risk-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .risk-title {
+            color: #dc2626;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .risk-category {
+            color: #991b1b;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .risk-description {
+            color: #4b5563;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+        .warning-icon {
+            color: #dc2626;
+            font-size: 1.25rem;
+        }
+    </style>
+    """
+
+    # Start HTML container
+    html_output = styles + '<div class="risk-container">'
+
+    # Add each risk entry
+    for _, row in df.iterrows():
+        risk_id = str(row["RiskID"])
+        risk_category = str(row["RiskCategory"])
+        risk_desc = str(row["RiskDescription"])
+
+        # Create card for each risk
+        html_output += f"""
+        <div class="risk-card">
+            <div class="risk-title">
+                <span class="warning-icon">⚠️</span>
+                <span>Risk #{risk_id}</span>
+            </div>
+            <div class="risk-category">
+                Category: {risk_category}
+            </div>
+            <div class="risk-description">
+                {risk_desc}
+            </div>
+        </div>
+        """
+
+    # Close container
+    html_output += '</div>'
+
+    return html_output
+
 
 def preprocess_image(image: Image) -> Image:
     """
