@@ -1,100 +1,16 @@
 from typing import Optional
-
 import gradio as gr
 
 from fairsenseai.analysis.ai_governance import ai_governance_response
 from fairsenseai.analysis.ai_safety_dashboard import display_ai_safety_dashboard
+from fairsenseai.analysis.risk_with_embedding import analyze_text_for_risks
 from fairsenseai.analysis.bias import (
     analyze_image_for_bias,
     analyze_images_batch,
     analyze_text_csv,
     analyze_text_for_bias,
 )
-from fairsenseai.analysis.risk_with_embedding import analyze_text_for_risks
 from fairsenseai.runtime import get_runtime
-import pandas as pd
-
-
-def display_about_page() -> str:
-    """
-    Provides an HTML string describing the Fairsense-AI platform.
-
-    Returns
-    -------
-    str
-        The HTML content for the About page.
-    """
-    about_html = """
-    <style>
-        .about-container {
-            padding: 20px;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        .about-title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .technology-section {
-            margin-bottom: 30px;
-        }
-        .technology-section h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-        .technology-section p {
-            margin-left: 20px;
-        }
-    </style>
-    <div class="about-container">
-        <div class="about-title">About Fairsense-AI</div>
-        <div class="technology-section">
-            <h3>🔍 Autoregressive Decoder-only Language Model</h3>
-            <p>
-                Fairsense-AI utilizes LLMs for generating detailed analyses of textual content,
-                detecting biases, and providing insights on AI governance topics.
-            </p>
-        </div>
-        <div class="technology-section">
-            <h3>🖼️  Image Captioning</h3>
-            <p>
-                Fairsense-AI uses Blip for generating descriptive captions of images.
-                This aids in understanding visual content and assessing it for biases or
-                sensitive elements.
-            </p>
-        </div>
-        <div class="technology-section">
-            <h3>🔤 Optical Character Recognition (OCR)</h3>
-            <p>
-                Fairsense-AI employs Tesseract OCR to extract text from images, allowing
-                analysis of textual content embedded within images.
-            </p>
-        </div>
-        <div class="technology-section">
-            <h3>⚙️ Transformers and PyTorch</h3>
-            <p>
-                Transformers (Hugging Face) and PyTorch power the underlying models, ensuring
-                robust NLP and deep learning functionalities.
-            </p>
-        </div>
-        <div class="technology-section">
-            <h3>📊 Plotly for Data Visualization</h3>
-            <p>
-                Plotly is used for creating interactive charts in the AI Safety Risks Dashboard,
-                providing engaging and informative data visualizations.
-            </p>
-        </div>
-        <div class="technology-section">
-            <h3>💻 Gradio Interface</h3>
-            <p>
-                Gradio offers a clean, user-friendly UI for interacting with the Fairsense-AI platform.
-            </p>
-        </div>
-    </div>
-    """
-    return about_html
 
 
 def start_server(
@@ -127,70 +43,24 @@ def start_server(
     >>> start_server()
     """
     # Initialize the runtime
-    get_runtime()
+    get_runtime(allow_filesystem_access=allow_filesystem_access)
 
-    description = """
-    <style>
-        .title {
-            text-align: center; 
-            font-size: 3em; 
-            font-weight: bold; 
-            margin-bottom: 20px; 
-            color: #4A90E2; /* Soft blue color */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Shadow for depth */
-            font-family: 'Arial', sans-serif; /* Clean, modern font */
-            animation: glow 2s infinite; /* Glowing effect */
-        }
+    with open("ui/home.html") as home_file:
+        home = home_file.read()
 
-        .description {
-            text-align: center; 
-            font-size: 1.2em; 
-            margin-bottom: 40px;
-            color: #333;
-        }
+    with open("ui/footer.html") as footer_file:
+        footer = footer_file.read()
 
-        @keyframes glow {
-            0% { text-shadow: 0 0 5px #4A90E2, 0 0 10px #4A90E2, 0 0 20px #4A90E2; }
-            50% { text-shadow: 0 0 10px #4A90E2, 0 0 20px #4A90E2, 0 0 40px #4A90E2; }
-            100% { text-shadow: 0 0 5px #4A90E2, 0 0 10px #4A90E2, 0 0 20px #4A90E2; }
-        }
-    </style>
-    <div class="title">✨ Fairsense-AI ✨</div>
-    <div class="description">
-    Fairsense-AI is an AI-driven platform for analyzing bias in textual and visual content.  
-    It is designed to promote transparency, fairness, and equity in AI systems. 
-    The platform is built to align with the principles of responsible AI, with a particular focus on fairness, bias, and sustainability.
-    </div>
-    <ul>
-        <li><strong>Text Analysis:</strong> Detect biases in text, highlight problematic terms, and provide actionable feedback.</li>
-        <li><strong>Image Analysis:</strong> Evaluate images for embedded text and captions for bias.</li>
-        <li><strong>Batch Processing:</strong> Analyze large datasets of text or images efficiently.</li>
-        <li><strong>AI Governance:</strong> Gain insights into ethical AI practices and responsible deployment.</li>
-    </ul>
-    """
+    with open("ui/about.html") as page_file:
+        about = page_file.read()
 
-    footer = """
-        <div class="footer" style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc;">
-            <p><i>"Responsible AI adoption for a better Sustainable world."</i></p>
-            <p><strong>Disclaimer:</strong> The outputs generated by this platform are based on AI models and may vary depending on the input and contextual factors. While efforts are made to ensure accuracy and fairness, users should exercise discretion and validate critical information.</p>
-<p>Developers: Shaina Raza, PhD, Vector Institute; Marelo Lotif; Mukund Sayeeganesh Chettiar.</p>
-        <p>Email for Shaina Raza: <a href='mailto:shaina.raza@torontomu.ca'>shaina.raza@vectorinstitute.ai</a>.</p>
-          </div>
-    """
-
-    demo = gr.Blocks(
-        # css="""
-        # #ai-dashboard {
-        #     padding: 20px;
-        # }
-        # .gradio-container {
-        #     background-color: #ffffff;
-        # }
-        # """
-    )
-
+    demo = gr.Blocks()
     with demo:
-        gr.HTML(description)
+        gr.HTML(home)
+        gr.HTML(footer)
+
+    with demo.route("Bias Identification", "/bias"):
+        gr.Markdown("# Bias Identification", elem_classes="page-title")
 
         with gr.Tabs():
             # --- Text Analysis Tab ---
@@ -199,12 +69,12 @@ def start_server(
                     text_input = gr.Textbox(
                         lines=5,
                         placeholder="Enter text to analyze for bias",
-                        label="Text Input"
+                        label="Text Input",
                     )
                     # Summarizer toggle for text analysis
                     use_summarizer_checkbox_text = gr.Checkbox(
                         value=True,
-                        label="Use Summarizer?"
+                        label="Use Summarizer?",
                     )
                     analyze_button = gr.Button("Analyze")
 
@@ -215,7 +85,7 @@ def start_server(
                         "Our hiring process is fair and unbiased, but we prefer male candidates for their intellect level."
                     ],
                     inputs=text_input,
-                    label="Try some examples"
+                    label="Try some examples",
                 )
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
@@ -225,45 +95,7 @@ def start_server(
                     analyze_text_for_bias,
                     inputs=[text_input, use_summarizer_checkbox_text],
                     outputs=[highlighted_text, detailed_analysis],
-                    show_progress=True
-                )
-
-            with gr.TabItem("📄 Risk Assessment"):
-                with gr.Row():
-                    text_input = gr.Textbox(
-                        lines=5,
-                        placeholder="Enter text to analyze for bias",
-                        label="Text Input"
-                    )
-                    # Summarizer toggle for text analysis
-                    # use_summarizer_checkbox_text = gr.Checkbox(
-                    #     value=True,
-                    #     label="Use Summarizer?"
-                    # )
-                    analyze_button = gr.Button("Analyze")
-
-                # Examples
-                gr.Examples(
-                    examples=[
-                        "Our team is creating a healthcare chatbot that analyzes patient symptoms using electronic "
-                        "health records. It provides early diagnoses, treatment advice, and can access sensitive "
-                        "patient information. We must handle data security, privacy, and potential misdiagnoses.",
-                        "We’re building an AI-powered facial recognition tool to improve workplace security. "
-                        "It will monitor employee entrances, verify identities in real-time, and store face embeddings."
-                        " The system must comply with privacy regulations and handle sensitive biometrics."
-                    ],
-                    inputs=text_input,
-                    label="Try some examples"
-                )
-
-                highlighted_text = gr.HTML(label="Highlighted Text")
-                csv_output_file = gr.File(label="Download Detailed Results in CSV")
-
-                analyze_button.click(
-                    analyze_text_for_risks,
-                    inputs=text_input,
-                    outputs=[highlighted_text, csv_output_file],
-                    show_progress=True
+                    show_progress=True,
                 )
 
             # --- Image Analysis Tab ---
@@ -273,7 +105,7 @@ def start_server(
                     # Summarizer toggle for image analysis
                     use_summarizer_checkbox_img = gr.Checkbox(
                         value=True,
-                        label="Use Summarizer?"
+                        label="Use Summarizer?",
                     )
                     analyze_image_button = gr.Button("Analyze")
 
@@ -292,7 +124,7 @@ def start_server(
                     analyze_image_for_bias,
                     inputs=[image_input, use_summarizer_checkbox_img],
                     outputs=[highlighted_caption, image_analysis],
-                    show_progress=True
+                    show_progress=True,
                 )
 
             # --- Batch Text CSV Analysis Tab ---
@@ -300,12 +132,12 @@ def start_server(
                 with gr.Row():
                     csv_input = gr.File(
                         label="Upload Text CSV (with 'text' column)",
-                        file_types=['.csv']
+                        file_types=['.csv'],
                     )
                     # Summarizer toggle for batch text CSV
                     use_summarizer_checkbox_text_csv = gr.Checkbox(
                         value=True,
-                        label="Use Summarizer?"
+                        label="Use Summarizer?",
                     )
                     analyze_csv_button = gr.Button("Analyze CSV")
 
@@ -315,7 +147,7 @@ def start_server(
                     analyze_text_csv,
                     inputs=[csv_input, use_summarizer_checkbox_text_csv],
                     outputs=csv_results,
-                    show_progress=True
+                    show_progress=True,
                 )
 
             # --- Batch Image Analysis Tab ---
@@ -325,12 +157,12 @@ def start_server(
                         label="Upload Images (multiple allowed)",
                         file_types=["image"],
                         type="filepath",
-                        file_count="multiple"
+                        file_count="multiple",
                     )
                     # Summarizer toggle for batch image
                     use_summarizer_checkbox_img_batch = gr.Checkbox(
                         value=True,
-                        label="Use Summarizer?"
+                        label="Use Summarizer?",
                     )
                     analyze_images_button = gr.Button("Analyze Images")
 
@@ -340,71 +172,46 @@ def start_server(
                     analyze_images_batch,
                     inputs=[images_input, use_summarizer_checkbox_img_batch],
                     outputs=images_results,
-                    show_progress=True
+                    show_progress=True,
                 )
 
-            # --- AI Governance and Safety ---
-            with gr.TabItem("📜 AI Governance and Safety"):
+        gr.HTML(footer)
+
+    with demo.route("Risk Management", "/risk"):
+        gr.Markdown("# Risk Management", elem_classes="page-title")
+
+        with gr.Tabs():
+            with gr.TabItem("📄 Risk Identification and Mitigation"):
                 with gr.Row():
-                    predefined_topics = [
-                        "Ethical AI Development",
-                        "Data Privacy in AI",
-                        "AI Bias Mitigation Strategies",
-                        "Transparency and Explainability",
-                        "Regulation and Compliance",
-                        "AI in Healthcare",
-                        "AI and Employment",
-                        "Environmental Impact of AI",
-                        "AI in Education",
-                        "AI and Human Rights"
-                    ]
-                    governance_dropdown = gr.Dropdown(
-                        choices=predefined_topics,
-                        label="Select a Topic",
-                        value=predefined_topics[0],
-                        interactive=True
+                    text_input = gr.Textbox(
+                        lines=5,
+                        placeholder="Enter text to analyze for bias",
+                        label="Text Input",
+                        scale=4
                     )
-                with gr.Row():
-                    governance_input = gr.Textbox(
-                        lines=3,
-                        placeholder="Or enter your own topic or question about AI governance and safety...",
-                        label="Custom Topic",
-                        interactive=True
-                    )
-                # Summarizer toggle for AI Governance
-                use_summarizer_checkbox_governance = gr.Checkbox(
-                    value=True,
-                    label="Use Summarizer?"
+                    analyze_button = gr.Button("Analyze Risks", scale=1)
+
+                # Examples
+                gr.Examples(
+                    examples=[
+                        "Our team is creating a healthcare chatbot that analyzes patient symptoms using electronic "
+                        "health records. It provides early diagnoses, treatment advice, and can access sensitive "
+                        "patient information. We must handle data security, privacy, and potential misdiagnoses.",
+                        "We’re building an AI-powered facial recognition tool to improve workplace security. "
+                        "It will monitor employee entrances, verify identities in real-time, and store face embeddings."
+                        " The system must comply with privacy regulations and handle sensitive biometrics."
+                    ],
+                    inputs=text_input,
+                    label="Try some examples"
                 )
-                governance_button = gr.Button("Get Insights")
-                governance_insights = gr.HTML(label="Governance Insights")
 
-                def governance_topic_handler(
-                    selected_topic: str,
-                    custom_topic: str,
-                    use_summarizer: bool,
-                    progress: gr.Progress = gr.Progress()
-                ):
-                    progress(0, "Starting...")
-                    topic = custom_topic.strip() if custom_topic.strip() else selected_topic
-                    if not topic:
-                        progress(1, "No topic selected")
-                        return "Please select a topic from the dropdown or enter your own question."
+                csv_output_file = gr.File(label="Risks and Outcomes Traceability Matrix")
+                highlighted_text = gr.HTML(label="Highlighted Text")
 
-                    progress(0.2, "Generating response...")
-                    # Pass the summarizer toggle
-                    response = ai_governance_response(
-                        topic,
-                        use_summarizer=use_summarizer,
-                        progress=lambda x, desc="": progress(0.2 + x * 0.8, desc)
-                    )
-                    progress(1.0, "Done")
-                    return response
-
-                governance_button.click(
-                    governance_topic_handler,
-                    inputs=[governance_dropdown, governance_input, use_summarizer_checkbox_governance],
-                    outputs=governance_insights,
+                analyze_button.click(
+                    analyze_text_for_risks,
+                    inputs=text_input,
+                    outputs=[highlighted_text, csv_output_file],
                     show_progress=True
                 )
 
@@ -421,10 +228,11 @@ def start_server(
                 gr.Markdown("### AI Safety Risks Data")
                 gr.Dataframe(df)
 
-            # --- About Page ---
-            with gr.TabItem("ℹ️ About Fairsense-AI"):
-                about_output = gr.HTML(value=display_about_page())
+        gr.HTML(footer)
 
+    with demo.route("About FairSense-AI", "/about"):
+        gr.Markdown("# About FairSense-AI", elem_classes="page-title")
+        gr.HTML(value=about)
         gr.HTML(footer)
 
     demo.queue().launch(share=make_public_url,

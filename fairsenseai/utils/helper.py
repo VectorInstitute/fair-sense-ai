@@ -78,6 +78,7 @@ def post_process_response(response: str, use_summarizer: Optional[bool] = True) 
     )
     return f"<strong>Here is the analysis:</strong> {cleaned_response}"
 
+
 def highlight_bias(text: str, bias_words: List[str]) -> str:
     """
     Highlights bias words in the text with inline HTML styling.
@@ -175,9 +176,9 @@ def style_risks(df: pd.DataFrame) -> str:
 
     # Add each risk entry
     for _, row in df.iterrows():
-        risk_id = str(row["RiskID"])
-        risk_category = str(row["RiskCategory"])
-        risk_desc = str(row["RiskDescription"])
+        risk_id = str(row["Risk ID"])
+        risk_category = str(row["Risk Category"])
+        risk_desc = str(row["Risk Description"])
 
         # Create card for each risk
         html_output += f"""
