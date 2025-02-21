@@ -6,7 +6,7 @@ from fairsenseai.utils.helper import row_to_text
 
 def build_and_save_index(
         df: pd.DataFrame,
-        faiss_index_file: str = "/Users/matin/vector/fair-sense-ai/data/risk_index.faiss",
+        faiss_index_file: str = "dataframes_and_indexes/risk_index.faiss",
         model_name: str = "all-MiniLM-L6-v2",
         mode: str = "risk"
 ):
@@ -52,9 +52,9 @@ def build_and_save_index(
 
 
 if __name__ == "__main__":
-    df_risk = pd.read_csv('/Users/matin/vector/fair-sense-ai/data/preprocessed_risks_df.csv')
-    df_ai_rmf = pd.read_csv('/Users/matin/vector/fair-sense-ai/data/AI_RMF_playbook.csv')
+    df_risk = pd.read_csv('dataframes_and_indexes/preprocessed_risks_df.csv')
+    df_ai_rmf = pd.read_csv('dataframes_and_indexes/AI_RMF_playbook.csv')
     df = df_ai_rmf.reset_index(drop=True)
     build_and_save_index(df,
-                         faiss_index_file='/Users/matin/vector/fair-sense-ai/data/ai_rmf_index.faiss',
+                         faiss_index_file='dataframes_and_indexes/ai_rmf_index.faiss',
                          mode='ai_rmf')

@@ -1,13 +1,14 @@
-import faiss
-import pandas as pd
-import numpy as np
 import time
-import gradio as gr
 from datetime import datetime
 from pathlib import Path
-
 from typing import Tuple
+
+import faiss
+import gradio as gr
+import numpy as np
+import pandas as pd
 from sentence_transformers import SentenceTransformer
+
 from fairsenseai.utils.helper import style_risks
 
 
@@ -48,8 +49,8 @@ class RiskEmbeddingIndex:
         self,
         df_risk: pd.DataFrame,
         df_ai_rmf: pd.DataFrame,
-        faiss_index_file_risk: str = "../data/risk_index.faiss",
-        faiss_index_file_ai_rmf: str = "../data/ai_rmf_index.faiss",
+        faiss_index_file_risk: str = "dataframes_and_indexes/risk_index.faiss",
+        faiss_index_file_ai_rmf: str = "dataframes_and_indexes/ai_rmf_index.faiss",
         model_name: str = "all-MiniLM-L6-v2"
     ):
 
@@ -88,7 +89,7 @@ class RiskEmbeddingIndex:
         -------
         pd.DataFrame
             DataFrame containing matched risks and their corresponding AI RMF sections with columns:
-            RiskID, RiskCategory, RiskDescription, RMFSectionName, RMFShortDescription,
+            MIT RiskID, RiskCategory, RiskDescription, RMFSectionName, RMFShortDescription,
             RMFAbout, and RMFSuggestedActions
 
         Examples
@@ -124,9 +125,9 @@ class RiskEmbeddingIndex:
                 rmf_row = self.df_ai_rmf.iloc[rmf_idx]
 
                 result_dict = {
-                    "Risk ID": risk_row.get("RiskID", None),
-                    'Risk Category': risk_row.get("RiskCategory", None),
-                    "Risk Description": risk_row.get("RiskDescription", None),
+                    "MIT Risk ID": risk_row.get("RiskID", None),
+                    'MIT Risk Category': risk_row.get("RiskCategory", None),
+                    "MIT Risk Description": risk_row.get("RiskDescription", None),
                     "NIST Subfunction": rmf_row.get("section_name", None),
                     "NIST Explanation": rmf_row.get("about", None),
                     "NIST Suggested Actions": rmf_row.get("suggested_actions", None),
@@ -169,13 +170,13 @@ def analyze_text_for_risks(
     Examples
     --------
     >>> scenario = "We're developing a facial recognition system for public spaces"
-    >>> highlighted, csv_path = analyze_text_for_risks_with_embeddings(
+    >>> highlighted, csv_path = analyze_text_for_risks(
     ...     scenario,
     ...     top_k_risk=3,
     ...     top_k_ai_rmf=2
     ... )
     >>> print(f"Results saved to: {csv_path}")
-    Results saved to: ../user_risk_results/output_20250218_143022.csv
+    Results saved to: user_risk_results/output_20250218_143022.csv
 
     Raises
     ------
@@ -184,12 +185,14 @@ def analyze_text_for_risks(
         and empty string as CSV path
     """
 
-    df_risk = pd.read_csv('../data/preprocessed_risks_df.csv')
-    df_ai_rmf = pd.read_csv('../data/AI_RMF_playbook.csv')
-    risk_ai_rmf_index = RiskEmbeddingIndex(df_risk, df_ai_rmf)
-
     progress(0, "Initializing risk analysis with embeddings...")
     try:
+        # df_risk = pd.read_csv('../data/preprocessed_risks_df.csv')
+        df_risk = pd.read_csv('dataframes_and_indexes/preprocessed_risks_df.csv')
+        # df_ai_rmf = pd.read_csv('../data/AI_RMF_playbook.csv')
+        df_ai_rmf = pd.read_csv('dataframes_and_indexes/AI_RMF_playbook.csv')
+        risk_ai_rmf_index = RiskEmbeddingIndex(df_risk, df_ai_rmf)
+
         time.sleep(0.2)
         progress(0.1, "Retrieving relevant risks...")
 
@@ -198,18 +201,18 @@ def analyze_text_for_risks(
 
         progress(0.2, f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...")
 
-        csv_folder_path = Path("../user_risk_results")
+        csv_folder_path = Path("user_risk_results")
         csv_folder_path.mkdir(parents=True, exist_ok=True)
-        csv_path = csv_folder_path / f"output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        csv_path = csv_folder_path / f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
         top_risks_ai_rmf_df.to_csv(csv_path, index=False)
 
         risks_str = ""
         for i, row in top_risks_ai_rmf_df.iterrows():
-            risk_id = row["Risk ID"]
-            risk_category = row["Risk Category"]
-            risk_desc = row["Risk Description"]
-            risks_str += f"Risk #{risk_id}: Category of [{risk_category}]  {risk_desc}\n"
+            risk_id = row["MIT Risk ID"]
+            risk_category = row["MIT Risk Category"]
+            risk_desc = row["MIT Risk Description"]
+            risks_str += f"MIT Risk #{risk_id}: Category of [{risk_category}]  {risk_desc}\n"
 
         progress(0.3, "Generating response from model...")
         time.sleep(1)

@@ -176,16 +176,16 @@ def style_risks(df: pd.DataFrame) -> str:
 
     # Add each risk entry
     for _, row in df.iterrows():
-        risk_id = str(row["Risk ID"])
-        risk_category = str(row["Risk Category"])
-        risk_desc = str(row["Risk Description"])
+        risk_id = str(row["MIT Risk ID"])
+        risk_category = str(row["MIT Risk Category"])
+        risk_desc = str(row["MIT Risk Description"])
 
         # Create card for each risk
         html_output += f"""
         <div class="risk-card">
             <div class="risk-title">
                 <span class="warning-icon">⚠️</span>
-                <span>Risk #{risk_id}</span>
+                <span>MIT Risk #{risk_id}</span>
             </div>
             <div class="risk-category">
                 Category: {risk_category}
