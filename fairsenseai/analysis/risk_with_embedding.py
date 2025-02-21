@@ -124,13 +124,12 @@ class RiskEmbeddingIndex:
                 rmf_row = self.df_ai_rmf.iloc[rmf_idx]
 
                 result_dict = {
-                    "RiskID": risk_row.get("RiskID", None),
-                    'RiskCategory': risk_row.get("RiskCategory", None),
-                    "RiskDescription": risk_row.get("RiskDescription", None),
-                    "RMFSectionName": rmf_row.get("section_name", None),
-                    "RMFShortDescription": rmf_row.get("short_description", None),
-                    "RMFAbout": rmf_row.get("about", None),
-                    "RMFSuggestedActions": rmf_row.get("suggested_actions", None),
+                    "Risk ID": risk_row.get("RiskID", None),
+                    'Risk Category': risk_row.get("RiskCategory", None),
+                    "Risk Description": risk_row.get("RiskDescription", None),
+                    "NIST Subfunction": rmf_row.get("section_name", None),
+                    "NIST Explanation": rmf_row.get("about", None),
+                    "NIST Suggested Actions": rmf_row.get("suggested_actions", None),
                 }
                 results.append(result_dict)
 
@@ -207,9 +206,9 @@ def analyze_text_for_risks(
 
         risks_str = ""
         for i, row in top_risks_ai_rmf_df.iterrows():
-            risk_id = row["RiskID"]
-            risk_category = row["RiskCategory"]
-            risk_desc = row["RiskDescription"]
+            risk_id = row["Risk ID"]
+            risk_category = row["Risk Category"]
+            risk_desc = row["Risk Description"]
             risks_str += f"Risk #{risk_id}: Category of [{risk_category}]  {risk_desc}\n"
 
         progress(0.3, "Generating response from model...")
