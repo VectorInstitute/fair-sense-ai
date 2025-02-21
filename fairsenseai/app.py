@@ -1,23 +1,24 @@
-from typing import Optional
+from typing import Optional, Tuple
+
 import gradio as gr
 
 from fairsenseai.analysis.ai_governance import ai_governance_response
 from fairsenseai.analysis.ai_safety_dashboard import display_ai_safety_dashboard
-from fairsenseai.analysis.risk_with_embedding import analyze_text_for_risks
 from fairsenseai.analysis.bias import (
     analyze_image_for_bias,
     analyze_images_batch,
     analyze_text_csv,
     analyze_text_for_bias,
 )
+from fairsenseai.analysis.risk_assessment import analyze_text_for_risks
 from fairsenseai.runtime import get_runtime
 
 
 def start_server(
-    make_public_url: Optional[bool] = True,
-    allow_filesystem_access: Optional[bool] = True,
-    prevent_thread_lock: Optional[bool] = False,
-    launch_browser_on_startup: Optional[bool] = False,
+        make_public_url: Optional[bool] = True,
+        allow_filesystem_access: Optional[bool] = True,
+        prevent_thread_lock: Optional[bool] = False,
+        launch_browser_on_startup: Optional[bool] = False,
 ) -> None:
     """
     Starts the Gradio server with multiple tabs for text analysis, image analysis,
@@ -215,6 +216,14 @@ def start_server(
                     show_progress=True
                 )
 
+                gr.Markdown(
+                    """
+                    **Useful References:**
+                    - [MIT AI Risk Repository](https://airisk.mit.edu/)
+                    - [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+                    """
+                )
+
             # --- AI Safety Risks Dashboard ---
             with gr.TabItem("📊 AI Safety Risks Dashboard"):
                 fig_bar, fig_pie, fig_scatter, df = display_ai_safety_dashboard()
@@ -237,8 +246,7 @@ def start_server(
 
     demo.queue().launch(share=make_public_url,
                         prevent_thread_lock=prevent_thread_lock,
-                        inbrowser=launch_browser_on_startup,
-                        allowed_paths=['../user_risk_results'])
+                        inbrowser=launch_browser_on_startup)
 
 
 if __name__ == "__main__":
