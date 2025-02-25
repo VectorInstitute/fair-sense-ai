@@ -23,6 +23,8 @@ setup(
         'pytesseract',
         'opencv-python',
         'numpy',
+        'faiss',
+        'sentence-transformers',
         # Include any other dependencies your code requires
     ],
     entry_points={
