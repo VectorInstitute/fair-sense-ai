@@ -187,9 +187,7 @@ def analyze_text_for_risks(
 
     progress(0, "Initializing risk analysis with embeddings...")
     try:
-        # df_risk = pd.read_csv('../data/preprocessed_risks_df.csv')
         df_risk = pd.read_csv('dataframes_and_indexes/preprocessed_risks_df.csv')
-        # df_ai_rmf = pd.read_csv('../data/AI_RMF_playbook.csv')
         df_ai_rmf = pd.read_csv('dataframes_and_indexes/AI_RMF_playbook.csv')
         risk_ai_rmf_index = RiskEmbeddingIndex(df_risk, df_ai_rmf)
 
