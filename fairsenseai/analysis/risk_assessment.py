@@ -23,9 +23,9 @@ class RiskEmbeddingIndex:
     df_ai_rmf : pd.DataFrame
         DataFrame containing AI RMF information with columns section_name, short_description, about, and suggested_actions
     faiss_index_file_risk : str, optional
-        Path to the FAISS index file for risks, by default "../data/risk_index.faiss"
+        Path to the FAISS index file for risks, by default "fairsenseai/dataframes_and_indexes/risk_index.faiss"
     faiss_index_file_ai_rmf : str, optional
-        Path to the FAISS index file for AI RMF, by default "../data/ai_rmf_index.faiss"
+        Path to the FAISS index file for AI RMF, by default "fairsenseai/dataframes_and_indexes/ai_rmf_index.faiss"
     model_name : str, optional
         Name of the sentence transformer model to use, by default "all-MiniLM-L6-v2"
 
@@ -49,8 +49,8 @@ class RiskEmbeddingIndex:
         self,
         df_risk: pd.DataFrame,
         df_ai_rmf: pd.DataFrame,
-        faiss_index_file_risk: str = "dataframes_and_indexes/risk_index.faiss",
-        faiss_index_file_ai_rmf: str = "dataframes_and_indexes/ai_rmf_index.faiss",
+        faiss_index_file_risk: str,
+        faiss_index_file_ai_rmf: str,
         model_name: str = "all-MiniLM-L6-v2"
     ):
 
@@ -187,9 +187,25 @@ def analyze_text_for_risks(
 
     progress(0, "Initializing risk analysis with embeddings...")
     try:
-        df_risk = pd.read_csv('dataframes_and_indexes/preprocessed_risks_df.csv')
-        df_ai_rmf = pd.read_csv('dataframes_and_indexes/AI_RMF_playbook.csv')
-        risk_ai_rmf_index = RiskEmbeddingIndex(df_risk, df_ai_rmf)
+        script_dir = Path(__file__).resolve().parent
+        main_dir = script_dir.parent
+        data_dir = main_dir / "dataframes_and_indexes"
+
+        df_risk_path = data_dir / "preprocessed_risks_df.csv"
+        df_ai_rmf_path = data_dir / "AI_RMF_playbook.csv"
+        faiss_risk_path = data_dir / "risk_index.faiss"
+        faiss_ai_rmf_path = data_dir / "ai_rmf_index.faiss"
+
+        df_risk = pd.read_csv(df_risk_path)
+        df_ai_rmf = pd.read_csv(df_ai_rmf_path)
+
+        risk_ai_rmf_index = RiskEmbeddingIndex(
+            df_risk,
+            df_ai_rmf,
+            faiss_index_file_risk=str(faiss_risk_path),
+            faiss_index_file_ai_rmf=str(faiss_ai_rmf_path),
+            model_name="all-MiniLM-L6-v2"
+        )
 
         time.sleep(0.2)
         progress(0.1, "Retrieving relevant risks...")
@@ -199,10 +215,11 @@ def analyze_text_for_risks(
 
         progress(0.2, f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...")
 
-        csv_folder_path = Path("user_risk_results")
+        csv_folder_path = main_dir / "user_risk_results"
         csv_folder_path.mkdir(parents=True, exist_ok=True)
-        csv_path = csv_folder_path / f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-
+        csv_path = csv_folder_path / (
+            f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        )
         top_risks_ai_rmf_df.to_csv(csv_path, index=False)
 
         risks_str = ""
