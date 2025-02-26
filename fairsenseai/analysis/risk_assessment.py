@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple
+import traceback
 
 import faiss
 import gradio as gr
@@ -245,5 +246,8 @@ def analyze_text_for_risks(
         return highlighted_output, str(csv_path)
 
     except Exception as e:
+        error_trace = traceback.format_exc()
+        print(f"Error in analyze_text_for_risks: {e}\n{error_trace}")
         progress(1.0, "Analysis failed.")
         return f"Error: {e}", ""
+
