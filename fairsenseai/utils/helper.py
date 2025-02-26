@@ -1,3 +1,7 @@
+"""
+helper functions
+"""
+
 from typing import List, Optional
 
 import cv2
@@ -10,11 +14,42 @@ import re
 
 
 def row_to_text(row, mode='risk'):
+    """
+    Converts a DataFrame row to a formatted text string based on the specified mode.
+
+    Parameters
+    ----------
+    row : pandas.Series
+        A row from a DataFrame containing risk or AI RMF information
+    mode : str, optional
+        The conversion mode - either 'risk' or 'ai_rmf', by default 'risk'
+
+    Returns
+    -------
+    str
+        Formatted text string combining key fields from the row
+
+    Examples
+    --------
+    >>> risk_row = pd.Series({
+    ...     'RiskID': 123,
+    ...     'RiskCategory': 'Privacy',
+    ...     'RiskDescription': 'Unauthorized data access'
+    ... })
+    >>> row_to_text(risk_row, mode='risk')
+    'Risk Category: Privacy | Risk Description: Unauthorized data access'
+
+    >>> rmf_row = pd.Series({
+    ...     'section_name': 'Security',
+    ...     'short_description': 'Data protection measures'
+    ... })
+    >>> row_to_text(rmf_row, mode='ai_rmf')
+    'Short Description: Data protection measures | About: Data protection measures'
+    """
+
     if mode == 'risk':
         return f"Risk Category: {row['RiskCategory']} | Risk Description: {row['RiskDescription']}"
     if mode == 'ai_rmf':
-        # return (f"Section Name: {row['section_name']} | Short Description: {row['short_description']} "
-        #         f"| About: {row['short_description']} | Suggested Actions: {row['suggested_actions']}")
         return f"Short Description: {row['short_description']} | About: {row['short_description']}"
 
 

@@ -1,3 +1,9 @@
+"""
+Implements a risk analysis system that matches AI project descriptions
+to potential risks from MIT Risk Repository and maps them to
+NIST AI Risk Management Framework guidelines using embedding-based similarity search.
+"""
+
 import time
 from datetime import datetime
 from pathlib import Path
@@ -126,7 +132,7 @@ class RiskEmbeddingIndex:
 
                 result_dict = {
                     "MIT Risk ID": risk_row.get("RiskID", None),
-                    'MIT Risk Category': risk_row.get("RiskCategory", None),
+                    "MIT Risk Category": risk_row.get("RiskCategory", None),
                     "MIT Risk Description": risk_row.get("RiskDescription", None),
                     "NIST Subfunction": rmf_row.get("section_name", None),
                     "NIST Explanation": rmf_row.get("about", None),

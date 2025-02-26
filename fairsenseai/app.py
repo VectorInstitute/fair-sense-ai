@@ -244,9 +244,11 @@ def start_server(
         gr.HTML(value=about)
         gr.HTML(footer)
 
-    demo.queue().launch(share=make_public_url,
-                        prevent_thread_lock=prevent_thread_lock,
-                        inbrowser=launch_browser_on_startup)
+    demo.queue().launch(
+        share=make_public_url,
+        prevent_thread_lock=prevent_thread_lock,
+        inbrowser=launch_browser_on_startup,
+    )
 
 
 if __name__ == "__main__":
