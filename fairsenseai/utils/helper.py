@@ -53,25 +53,6 @@ def row_to_text(row, mode="risk") -> str:
         return f"Short Description: {row['short_description']} | About: {row['short_description']}"
 
 
-def extract_hashtag_integers(text):
-    """
-    Extract all integers that are preceded by '#' from a text string.
-
-    Args:
-        text (str): Input text containing numbers with hashtags
-
-    Returns:
-        list: Array of integers that were preceded by '#'
-    """
-
-    integers = re.findall(r"-?\d+", text)
-
-    # Convert strings to integers
-    integers = [str(num) for num in integers]
-
-    return integers
-
-
 def post_process_response(response: str, use_summarizer: Optional[bool] = True) -> str:
     """
     Post-processes the response by optionally summarizing if the text is long
