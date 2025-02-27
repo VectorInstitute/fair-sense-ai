@@ -11,10 +11,10 @@ from fairsenseai.utils.helper import row_to_text
 
 
 def build_and_save_index(
-        df: pd.DataFrame,
-        faiss_index_file: str = "dataframes_and_indexes/risk_index.faiss",
-        model_name: str = "all-MiniLM-L6-v2",
-        mode: str = "risk"
+    df: pd.DataFrame,
+    faiss_index_file: str = "dataframes_and_indexes/risk_index.faiss",
+    model_name: str = "all-MiniLM-L6-v2",
+    mode: str = "risk",
 ):
     """
     Builds and saves a FAISS index for fast similarity search of risk embeddings.

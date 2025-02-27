@@ -58,7 +58,7 @@ class RiskEmbeddingIndex:
         df_ai_rmf: pd.DataFrame,
         faiss_index_file_risk: str,
         faiss_index_file_ai_rmf: str,
-        model_name: str = "all-MiniLM-L6-v2"
+        model_name: str = "all-MiniLM-L6-v2",
     ):
 
         self.df_risk = df_risk.reset_index(drop=True)
@@ -77,9 +77,13 @@ class RiskEmbeddingIndex:
         # Safety check: the two indexes should typically
         # have the same dimension if built from the same embedder.
         if self.dim_risk != self.dim_rmf:
-            print(f"Warning: risk index dimension={self.dim_risk}, rmf index dimension={self.dim_rmf}.")
+            print(
+                f"Warning: risk index dimension={self.dim_risk}, rmf index dimension={self.dim_rmf}."
+            )
 
-    def risk_with_ai_rmf(self, query: str, k_risk: int = 5, k_rmf: int = 1) -> pd.DataFrame:
+    def risk_with_ai_rmf(
+        self, query: str, k_risk: int = 5, k_rmf: int = 1
+    ) -> pd.DataFrame:
         """
         Retrieves similar risks and maps them to relevant AI RMF sections using embedding similarity.
 
@@ -123,7 +127,7 @@ class RiskEmbeddingIndex:
             self.index_risk.reconstruct(int(i), risk_embedding[0])
 
             # Search in the AI RMF index
-            dist, ind = self.index_ai_rmf.search(risk_embedding, k_rmf)
+            _, ind = self.index_ai_rmf.search(risk_embedding, k_rmf)
 
             # Combine each matched row
             for rmf_idx in ind[0]:
@@ -148,7 +152,7 @@ def analyze_text_for_risks(
     text_input: str,
     top_k_risk: int = 5,
     top_k_ai_rmf: int = 1,
-    progress: gr.Progress = gr.Progress()
+    progress: gr.Progress = gr.Progress(),
 ) -> Tuple[str, str]:
     """
     Analyzes input text for AI-related risks and maps them to AI RMF guidelines using embedding-based similarity search.
@@ -211,16 +215,21 @@ def analyze_text_for_risks(
             df_ai_rmf,
             faiss_index_file_risk=str(faiss_risk_path),
             faiss_index_file_ai_rmf=str(faiss_ai_rmf_path),
-            model_name="all-MiniLM-L6-v2"
+            model_name="all-MiniLM-L6-v2",
         )
 
         time.sleep(0.2)
         progress(0.1, "Retrieving relevant risks...")
 
         # Retrieve top K from the embedding index
-        top_risks_ai_rmf_df = risk_ai_rmf_index.risk_with_ai_rmf(text_input, k_risk=top_k_risk, k_rmf=top_k_ai_rmf)
+        top_risks_ai_rmf_df = risk_ai_rmf_index.risk_with_ai_rmf(
+            text_input, k_risk=top_k_risk, k_rmf=top_k_ai_rmf
+        )
 
-        progress(0.2, f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...")
+        progress(
+            0.2,
+            f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...",
+        )
 
         csv_folder_path = main_dir / "user_risk_results"
         csv_folder_path.mkdir(parents=True, exist_ok=True)
@@ -230,11 +239,13 @@ def analyze_text_for_risks(
         top_risks_ai_rmf_df.to_csv(csv_path, index=False)
 
         risks_str = ""
-        for i, row in top_risks_ai_rmf_df.iterrows():
+        for _, row in top_risks_ai_rmf_df.iterrows():
             risk_id = row["MIT Risk ID"]
             risk_category = row["MIT Risk Category"]
             risk_desc = row["MIT Risk Description"]
-            risks_str += f"MIT Risk #{risk_id}: Category of [{risk_category}]  {risk_desc}\n"
+            risks_str += (
+                f"MIT Risk #{risk_id}: Category of [{risk_category}]  {risk_desc}\n"
+            )
 
         progress(0.3, "Generating response from model...")
         time.sleep(1)
@@ -250,4 +261,3 @@ def analyze_text_for_risks(
         print(f"Error in analyze_text_for_risks: {e}\n{error_trace}")
         progress(1.0, "Analysis failed.")
         return f"Error: {e}", ""
-

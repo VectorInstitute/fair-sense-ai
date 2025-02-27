@@ -13,7 +13,7 @@ import pandas as pd
 import re
 
 
-def row_to_text(row, mode='risk'):
+def row_to_text(row, mode="risk") -> str:
     """
     Converts a DataFrame row to a formatted text string based on the specified mode.
 
@@ -47,9 +47,9 @@ def row_to_text(row, mode='risk'):
     'Short Description: Data protection measures | About: Data protection measures'
     """
 
-    if mode == 'risk':
+    if mode == "risk":
         return f"Risk Category: {row['RiskCategory']} | Risk Description: {row['RiskDescription']}"
-    if mode == 'ai_rmf':
+    if mode == "ai_rmf":
         return f"Short Description: {row['short_description']} | About: {row['short_description']}"
 
 
@@ -64,7 +64,7 @@ def extract_hashtag_integers(text):
         list: Array of integers that were preceded by '#'
     """
 
-    integers = re.findall(r'-?\d+', text)
+    integers = re.findall(r"-?\d+", text)
 
     # Convert strings to integers
     integers = [str(num) for num in integers]
@@ -91,25 +91,22 @@ def post_process_response(response: str, use_summarizer: Optional[bool] = True) 
     """
     fairsense_runtime = get_runtime()
 
-    cleaned_response = ' '.join(response.split())
+    cleaned_response = " ".join(response.split())
 
     # Only summarize if the checkbox is enabled and the text is long
     if use_summarizer and len(cleaned_response.split()) > 50:
         try:
             summary = fairsense_runtime.summarizer(
-                cleaned_response,
-                max_length=200,
-                min_length=50,
-                do_sample=False
+                cleaned_response, max_length=200, min_length=50, do_sample=False
             )
-            cleaned_response = summary[0]['summary_text']
+            cleaned_response = summary[0]["summary_text"]
         except Exception as e:
             cleaned_response = f"Error during summarization: {e}\nOriginal response: {cleaned_response}"
 
     # Clean up text into sentences
-    sentences = [sentence.strip() for sentence in cleaned_response.split('.')]
-    cleaned_response = '. '.join(sentences).strip() + (
-        '.' if not cleaned_response.endswith('.') else ''
+    sentences = [sentence.strip() for sentence in cleaned_response.split(".")]
+    cleaned_response = ". ".join(sentences).strip() + (
+        "." if not cleaned_response.endswith(".") else ""
     )
     return f"<strong>Here is the analysis:</strong> {cleaned_response}"
 
@@ -124,7 +121,7 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
         The input text to highlight.
     bias_words
         A list of bias words to highlight.
-    
+
     Returns
     -------
     str
@@ -134,8 +131,7 @@ def highlight_bias(text: str, bias_words: List[str]) -> str:
         return f"<div>{text}</div>"
     for word in bias_words:
         text = text.replace(
-            word,
-            f"<span style='color: red; font-weight: bold;'>{word}</span>"
+            word, f"<span style='color: red; font-weight: bold;'>{word}</span>"
         )
     return f"<div>{text}</div>"
 
@@ -232,7 +228,7 @@ def style_risks(df: pd.DataFrame) -> str:
         """
 
     # Close container
-    html_output += '</div>'
+    html_output += "</div>"
 
     return html_output
 
@@ -245,7 +241,7 @@ def preprocess_image(image: Image) -> Image:
     ----------
     image
         The input image to preprocess.
-    
+
     Returns
     -------
     Image

@@ -15,10 +15,10 @@ from fairsenseai.runtime import get_runtime
 
 
 def start_server(
-        make_public_url: Optional[bool] = True,
-        allow_filesystem_access: Optional[bool] = True,
-        prevent_thread_lock: Optional[bool] = False,
-        launch_browser_on_startup: Optional[bool] = False,
+    make_public_url: Optional[bool] = True,
+    allow_filesystem_access: Optional[bool] = True,
+    prevent_thread_lock: Optional[bool] = False,
+    launch_browser_on_startup: Optional[bool] = False,
 ) -> None:
     """
     Starts the Gradio server with multiple tabs for text analysis, image analysis,
@@ -83,7 +83,8 @@ def start_server(
                 gr.Examples(
                     examples=[
                         "Some people say that women are not suitable for leadership roles.",
-                        "Our hiring process is fair and unbiased, but we prefer male candidates for their intellect level."
+                        "Our hiring process is fair and unbiased, but we prefer male candidates "
+                        "for their intellect level.",
                     ],
                     inputs=text_input,
                     label="Try some examples",
@@ -111,12 +112,14 @@ def start_server(
                     analyze_image_button = gr.Button("Analyze")
 
                 # Example images
-                gr.Markdown("""
+                gr.Markdown(
+                    """
                 ### Example Images
                 You can download the following images and upload them to test the analysis:
                 - [Example 1](https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg)
                 - [Example 2](https://ichef.bbci.co.uk/news/1536/cpsprodpb/BB60/production/_115786974_d6bbf591-ea18-46b9-821b-87b8f8f6006c.jpg)
-                """)
+                """
+                )
 
                 highlighted_caption = gr.HTML(label="Highlighted Text and Caption")
                 image_analysis = gr.HTML(label="Detailed Analysis")
@@ -133,7 +136,7 @@ def start_server(
                 with gr.Row():
                     csv_input = gr.File(
                         label="Upload Text CSV (with 'text' column)",
-                        file_types=['.csv'],
+                        file_types=[".csv"],
                     )
                     # Summarizer toggle for batch text CSV
                     use_summarizer_checkbox_text_csv = gr.Checkbox(
@@ -188,7 +191,7 @@ def start_server(
                         lines=5,
                         placeholder="Enter text to analyze for bias",
                         label="Text Input",
-                        scale=4
+                        scale=4,
                     )
                     analyze_button = gr.Button("Analyze Risks", scale=1)
 
@@ -200,20 +203,22 @@ def start_server(
                         "patient information. We must handle data security, privacy, and potential misdiagnoses.",
                         "We’re building an AI-powered facial recognition tool to improve workplace security. "
                         "It will monitor employee entrances, verify identities in real-time, and store face embeddings."
-                        " The system must comply with privacy regulations and handle sensitive biometrics."
+                        " The system must comply with privacy regulations and handle sensitive biometrics.",
                     ],
                     inputs=text_input,
-                    label="Try some examples"
+                    label="Try some examples",
                 )
 
-                csv_output_file = gr.File(label="Risks and Outcomes Traceability Matrix")
+                csv_output_file = gr.File(
+                    label="Risks and Outcomes Traceability Matrix"
+                )
                 highlighted_text = gr.HTML(label="Highlighted Text")
 
                 analyze_button.click(
                     analyze_text_for_risks,
                     inputs=text_input,
                     outputs=[highlighted_text, csv_output_file],
-                    show_progress=True
+                    show_progress=True,
                 )
 
                 gr.Markdown(
