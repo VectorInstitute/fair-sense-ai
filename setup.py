@@ -23,7 +23,7 @@ setup(
         'pytesseract',
         'opencv-python',
         'numpy',
-        'faiss',
+        'faiss-cpu',
         'sentence-transformers',
         # Include any other dependencies your code requires
     ],
@@ -37,5 +37,5 @@ setup(
         'License :: OSI Approved :: MIT License',  # Update if you choose a different license
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.9',  # Specify your Python version
+    python_requires='>=3.10',  # Specify your Python version
 )

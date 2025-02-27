@@ -46,13 +46,13 @@ def start_server(
     # Initialize the runtime
     get_runtime(allow_filesystem_access=allow_filesystem_access)
 
-    with open("ui/home.html") as home_file:
+    with open("fairsenseai/ui/home.html") as home_file:
         home = home_file.read()
 
-    with open("ui/footer.html") as footer_file:
+    with open("fairsenseai/ui/footer.html") as footer_file:
         footer = footer_file.read()
 
-    with open("ui/about.html") as page_file:
+    with open("fairsenseai/ui/about.html") as page_file:
         about = page_file.read()
 
     demo = gr.Blocks()
