@@ -35,5 +35,5 @@ poetry install --no-root
 To run it, use the following command:
 
 ```shell
-python -m fairsenseai
+python -m fairsenseai.app
 ```

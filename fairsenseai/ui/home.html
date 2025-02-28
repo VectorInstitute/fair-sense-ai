@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairsense-AI</title>
+  <style>
+    /* ===== Reset & Basic Setup ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* left the body background as default. */
+    body {
+      line-height: 1.6;
+    }
+
+    /* ===== Title & Subtitle ===== */
+    .title {
+      text-align: center;
+      font-size: 2.8rem;
+      /* Use a single accent color for the glow effect. */
+      color: #2563eb;
+      margin: 1rem 0 0.5rem 0;
+      font-weight: 600;
+      animation: glow 2s infinite;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      color: #444;
+    }
+
+    /* Glowing animation for the title only. */
+    @keyframes glow {
+      0%, 100% {
+        text-shadow: 0 0 5px #2563eb, 0 0 10px #2563eb;
+      }
+      50% {
+        text-shadow: 0 0 10px #2563eb, 0 0 20px #2563eb;
+      }
+    }
+
+    /* ===== Basic Card & Section (No Custom Background) ===== */
+    .card, section {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      color: #2563eb; /* Accent color for headings */
+    }
+
+    /* ===== Features Grid ===== */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    /* ===== Individual Feature Card (No Background) ===== */
+    .feature-card {
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc; /* Optional small outline so it’s visible */
+    }
+
+    .feature-title {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #2563eb; /* Accent color */
+    }
+
+    /* For smaller screens */
+    @media (max-width: 600px) {
+      .title {
+        font-size: 2rem;
+      }
+      .subtitle {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header>
+    <h1 class="title">Fairsense-AI</h1>
+    <p class="subtitle">"Responsible AI Adoption for a better sustainable world"</p>
+  </header>
+
+  <!-- ===== Intro Card ===== -->
+  <div class="card">
+    <p>
+      <strong>Fairsense-AI</strong> is an <strong>AI-driven</strong> tool designed to analyze
+      <strong>bias</strong> in text and visual content. It also offers a platform for
+      <strong>risk identification</strong> and <strong>risk mitigation</strong>. With a strong
+      emphasis on <strong>Bias Identification</strong>, <strong>Risk Management</strong>, and
+      <strong>Sustainability</strong>, Fairsense-AI helps build <strong>trustworthy AI systems</strong>.
+    </p>
+  </div>
+
+  <!-- ===== Bias Identification Section ===== -->
+  <section>
+    <h2 class="section-title">🛡️ Bias Identification</h2>
+    <p>
+      Bias in AI systems can reinforce harmful stereotypes, impact decision-making, and reduce
+      fairness in real-world applications. Fairsense-AI is designed to identify and mitigate
+      bias in both text and visual content, fostering transparency and responsible AI development.
+    </p>
+    <h3>Key Features:</h3>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h4 class="feature-title">📝 Text Analysis</h4>
+        <p>Detects bias in text, highlights problematic terms, and provides feedback.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">🖼️ Image Analysis</h4>
+        <p>Evaluates images for embedded text and captions to detect potential bias.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">📊 Batch Text CSV Analysis</h4>
+        <p>Analyzes large text datasets efficiently for bias patterns.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">🗃️ Batch Image Analysis</h4>
+        <p>Processes large sets of images to identify and assess bias.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AI Risk Management Section ===== -->
+  <section>
+    <h2 class="section-title">⚠️ AI Risk Management</h2>
+    <p>
+      Unidentified risks in AI systems can lead to security vulnerabilities, ethical concerns,
+      and operational failures. Fairsense-AI is designed to identify and manage these risks
+      using the <strong>MIT Risk Repository</strong> while providing actionable insights
+      aligned with the <strong>NIST framework</strong>, fostering responsible AI
+      development and informed decision-making.
+    </p>
+    <h3>Key Features:</h3>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h4 class="feature-title">🔍 Risk Identification</h4>
+        <p> Identifies potential AI risks based on the comprehensive MIT Risk Repository.</p>
+      </div>
+      <div class="feature-card">
+        <h4 class="feature-title">🛡️ Risk Management</h4>
+        <p>Provides structured risk assessments and mitigation strategies aligned with the NIST framework.</p>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

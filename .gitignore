@@ -2,6 +2,7 @@ venv/
 env/
 .idea/
 bias-results/
+user_risk_results/
 docs/build
 docs/build copy
 quick_tutorial/data
