@@ -1,4 +1,5 @@
 from typing import Optional, Tuple
+from pathlib import Path
 
 import gradio as gr
 
@@ -46,13 +47,16 @@ def start_server(
     # Initialize the runtime
     get_runtime(allow_filesystem_access=allow_filesystem_access)
 
-    with open("fairsenseai/ui/home.html") as home_file:
+    script_dir = Path(__file__).resolve().parent
+    ui_dir = script_dir / "ui"
+
+    with open(ui_dir / "home.html") as home_file:
         home = home_file.read()
 
-    with open("fairsenseai/ui/footer.html") as footer_file:
+    with open(ui_dir / "footer.html") as footer_file:
         footer = footer_file.read()
 
-    with open("fairsenseai/ui/about.html") as page_file:
+    with open(ui_dir / "about.html") as page_file:
         about = page_file.read()
 
     demo = gr.Blocks()
