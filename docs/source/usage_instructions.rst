@@ -44,7 +44,7 @@ Features
 
 5. **AI Risk Management**
 
-   - Navigate to the AI Risk Management tab.
+   - Navigate to the **Risk Management** tab.
    - Enter the brief description of your project/task- either your own or one of the provided examples.
-   - Click Analyze risks
+   - Click **Analyze Risks**
    - Tool will display the relevant risks. It will also display the downloadable csv file with downloadable risk details. The CSV file will have the risk details, categories and suggested actions.
