@@ -172,11 +172,11 @@ def analyze_text_for_risks(
     -------
     Tuple[str, str]
         A tuple containing:
-        - highlighted_output: str
-            HTML formatted string with highlighted risk entries
-        - temp_csv_path: str
-            Path to the saved CSV file containing detailed analysis results
-            Empty string if analysis fails
+            highlighted_output : str
+                HTML formatted string with highlighted risk entries.
+            temp_csv_path : str
+                Path to the saved CSV file containing detailed analysis results.
+                Returns an empty string if analysis fails.
 
     Examples
     --------
@@ -187,7 +187,6 @@ def analyze_text_for_risks(
     ...     top_k_ai_rmf=2
     ... )
     >>> print(f"Results saved to: {csv_path}")
-    Results saved to: user_risk_results/output_20250218_143022.csv
 
     Raises
     ------

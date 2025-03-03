@@ -28,6 +28,10 @@ trust and facilitating AI adoption across industries. By following structured ri
 AI developers and policymakers can strike a balance between technological advancement and ethical 
 considerations, leading to AI systems that are both powerful and accountable.
 
+Video Tutorial
+--------------
+▶️ In-depth walkthrough of our AI Risk Management feature: `AI Risk Management <https://drive.google.com/file/d/1JsoNWnidWTdJWYyJY4ROFZGNQ94GCxrX/view?usp=sharing>`_
+
 References
 ----------
 .. _MIT Risk Repository:
