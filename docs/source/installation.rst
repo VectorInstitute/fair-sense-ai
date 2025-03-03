@@ -50,7 +50,7 @@ Step 1: Install Supporting Tools
 
       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
 
-Step 2: Install FairSense-AI
+Step 2: Install Fairsense-AI
 ----------------------------
 
 Install the ``fair-sense-ai`` package using pip:
@@ -62,4 +62,4 @@ Install the ``fair-sense-ai`` package using pip:
 Tutorial on Local Inference & Setup
 -----------------------------------
 
-Refer to `FairSense AI Tutorial <_static/attachment/FairSense_AI_Tutorial.pdf>`_ for detailed instructions on local inference and setup.
+Refer to `Fairsense-AI Tutorial <_static/attachment/Fairense-AI_Tutorial.pdf>`_ for detailed instructions on local inference and setup.

@@ -1,13 +1,13 @@
 
-What is FairSense-AI?
+What is Fairsense-AI?
 =====================
 
-FairSense-AI is a cutting-edge, AI-driven platform designed to promote transparency, fairness, and equity by analyzing bias in textual and visual content. Built with sustainability in mind, it leverages energy-efficient AI frameworks to ensure an eco-friendly approach to tackling societal biases.
+Fairsense-AI is a cutting edge, an AI-driven tool designed to analyze bias in text and visual content with sustainability in mind. It also offers a platform for risk identification and risk Mitigation. With a strong emphasis on Bias Identification, Risk Management, and Sustainability, Fairsense-AI helps build trustworthy AI systems.
 
 
 .. |pypi| image:: https://img.shields.io/pypi/v/fair-sense-ai
      :target: https://pypi.org/project/fair-sense-ai
-     :alt: FairSense-AI on PyPI
+     :alt: Fairsense-AI on PyPI
      :width: 80px
      :height: 20px
 
@@ -17,7 +17,7 @@ FairSense-AI is a cutting-edge, AI-driven platform designed to promote transpare
      :width: 120px
      :height: 20px
 
-- `FairSense-AI on PyPI <https://pypi.org/project/fair-sense-ai>`_ |pypi|
+- `Fairsense-AI on PyPI <https://pypi.org/project/fair-sense-ai>`_ |pypi|
 
 - `Quick Tutorial on Google Colab T4 <https://colab.research.google.com/drive/1en8JtZTAIa5MuV5OZWYNteYl95Ql9xy7?usp=sharing>`_ |collab|
 
@@ -28,7 +28,7 @@ Highlights
 - 🌱 **Green AI**: Optimized energy use of LLMs to reduce environmental impact.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :caption: Contents:
 
    installation

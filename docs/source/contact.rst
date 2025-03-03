@@ -31,7 +31,7 @@
 Team
 ====
 
-The team at the Vector Institute behind the development of the FairSense AI tool focuses on ethical AI practices, 
+The team at the Vector Institute behind the development of the Fairsense-AI tool focuses on ethical AI practices, 
 promoting fairness, accountability, and sustainability.
 
 For inquiries or support, contact:

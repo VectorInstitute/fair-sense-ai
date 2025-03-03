@@ -54,13 +54,19 @@ Quickstart Code Examples
 
    .. code-block:: python
 
-      from fairsenseai.analysis.ai_governance import ai_governance_response
+      from fairsenseai.analysis.risk_assessment import analyze_text_for_risks
 
-      # Get insights and risk assessment on selected topics
-      insights = ai_governance_response("AI Bias Mitigation Strategies")
+      # Get risk assessment and mitigation strategies on the given scenario
+      scenario = "We're developing a facial recognition system for public spaces"
+      highlighted_risks, csv_path = analyze_text_for_risks(
+         scenario,
+         top_k_risk=3,
+         top_k_ai_rmf=2
+         )
 
-      # Print the result
-      print("Insights and risk assessment:", insights)
+      # Print the result and saved CSV path
+      print("Risks:", highlighted_risks)
+      print(f"Results saved to: {csv_path}")
 
 4. **Launch the Interactive Application**
 
