@@ -134,10 +134,10 @@ class FairsenseGPURuntime(FairsenseRuntime):
         self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
         self.tokenizer.add_special_tokens(
             {
-                'eos_token': '</s>',
-                'bos_token': '<s>',
-                'unk_token': '<unk>',
-                'pad_token': '<pad>'
+                "eos_token": "</s>",
+                "bos_token": "<s>",
+                "unk_token": "<unk>",
+                "pad_token": "<pad>",
             }
         )
         self.tokenizer.pad_token = self.tokenizer.eos_token
