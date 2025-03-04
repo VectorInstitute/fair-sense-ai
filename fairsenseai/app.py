@@ -260,4 +260,4 @@ def start_server(
 
 
 if __name__ == "__main__":
-    start_server(make_public_url=False)
+    start_server()
