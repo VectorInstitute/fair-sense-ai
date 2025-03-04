@@ -3,7 +3,6 @@ from pathlib import Path
 
 import gradio as gr
 
-from fairsenseai.analysis.ai_governance import ai_governance_response
 from fairsenseai.analysis.ai_safety_dashboard import display_ai_safety_dashboard
 from fairsenseai.analysis.bias import (
     analyze_image_for_bias,
@@ -13,7 +12,6 @@ from fairsenseai.analysis.bias import (
 )
 from fairsenseai.analysis.risk_assessment import analyze_text_for_risks
 from fairsenseai.runtime import get_runtime
-
 
 def start_server(
     make_public_url: Optional[bool] = True,
@@ -66,6 +64,8 @@ def start_server(
 
     with demo.route("Bias Identification", "/bias"):
         gr.Markdown("# Bias Identification", elem_classes="page-title")
+    # with demo:
+    #     gr.Markdown("# Bias Identification", elem_classes="page-title")
 
         with gr.Tabs():
             # --- Text Analysis Tab ---
