@@ -27,9 +27,15 @@ Highlights
 - ⚠️ **AI Risk Management**: Identifies potential AI risks and provides  structured risk assessments and mitigation strategies 
 - 🌱 **Green AI**: Optimized energy use of LLMs to reduce environmental impact.
 
+Video Tutorial
+--------------
+- ▶️ `Bias Analysis <https://drive.google.com/file/d/1TauruosZpTIG568-WYm8FF1MrsQmoiMS/view?usp=sharing>`_
+- ▶️ `AI Risk Management <https://drive.google.com/file/d/1JsoNWnidWTdJWYyJY4ROFZGNQ94GCxrX/view?usp=sharing>`_
+
+Contents
+--------
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    installation
    quickstart
