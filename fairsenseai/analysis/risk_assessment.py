@@ -34,8 +34,8 @@ class RiskEmbeddingIndex:
         Path to the FAISS index file for risks, by default "fairsenseai/dataframes_and_indexes/risk_index.faiss"
     faiss_index_file_ai_rmf : str, optional
         Path to the FAISS index file for AI RMF, by default "fairsenseai/dataframes_and_indexes/ai_rmf_index.faiss"
-    model_name : str, optional
-        Name of the sentence transformer model to use, by default "all-MiniLM-L6-v2"
+    embedding_model_name : str, optional
+        Name of the sentence transformer model to use as embedder, by default "all-MiniLM-L6-v2"
 
     Examples
     --------
@@ -59,13 +59,13 @@ class RiskEmbeddingIndex:
         df_ai_rmf: pd.DataFrame,
         faiss_index_file_risk: str,
         faiss_index_file_ai_rmf: str,
-        model_name: str = "all-MiniLM-L6-v2",
+        embedding_model_name: str = "all-MiniLM-L6-v2",
     ):
 
         self.df_risk = df_risk.reset_index(drop=True)
         self.df_ai_rmf = df_ai_rmf.reset_index(drop=True)
 
-        self.embedder = SentenceTransformer(model_name)
+        self.embedder = SentenceTransformer(embedding_model_name)
 
         # Load FAISS indexes
         self.index_risk = faiss.read_index(faiss_index_file_risk)
@@ -153,6 +153,7 @@ def analyze_text_for_risks(
     text_input: str,
     top_k_risk: int = 5,
     top_k_ai_rmf: int = 1,
+    embedding_model_name: str = "all-MiniLM-L6-v2",
     progress: gr.Progress = gr.Progress(),
 ) -> Tuple[str, str]:
     """
@@ -168,6 +169,8 @@ def analyze_text_for_risks(
         Number of AI RMF matches per risk to retrieve, by default 1
     progress : gr.Progress, optional
         Gradio progress bar object for tracking analysis progress, by default gr.Progress()
+    embedding_model_name : str, optional
+        Name of the sentence transformer model to use as embedder, by default "all-MiniLM-L6-v2"
 
     Returns
     -------
@@ -215,7 +218,7 @@ def analyze_text_for_risks(
             df_ai_rmf,
             faiss_index_file_risk=str(faiss_risk_path),
             faiss_index_file_ai_rmf=str(faiss_ai_rmf_path),
-            model_name="all-MiniLM-L6-v2",
+            embedding_model_name=embedding_model_name,
         )
 
         time.sleep(0.2)

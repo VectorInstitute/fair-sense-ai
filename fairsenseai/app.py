@@ -117,7 +117,7 @@ def start_server(
 
                 # Example images
                 gr.Markdown(
-                    """
+                """
                 ### Example Images
                 You can download the following images and upload them to test the analysis:
                 - [Example 1](https://media.top1000funds.com/wp-content/uploads/2019/12/iStock-525807555.jpg)
