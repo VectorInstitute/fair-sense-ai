@@ -46,3 +46,19 @@ Contents
    troubleshooting
    license
    contact
+
+Bibliography
+~~~~~~~~~~~~
+To acknowledge the use of Fairsense-AI in your study, please cite the following article::
+
+   @misc{raza2025fairsenseairesponsibleaimeets,
+   title        = {FairSense-AI: Responsible AI Meets Sustainability},
+   author       = {Shaina Raza and Mukund Sayeeganesh Chettiar and Matin Yousefabadi and Tahniat Khan and Marcelo Lotif},
+   year         = 2025,
+   eprint       = {2503.02865},
+   archivePrefix= {arXiv},
+   primaryClass = {cs.CL},
+   url          = {https://arxiv.org/abs/2503.02865},
+   }
+
+The article is accessible online at: `FairSense-AI: Responsible AI Meets Sustainability <https://arxiv.org/abs/2503.02865>`_
