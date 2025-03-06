@@ -40,7 +40,7 @@ setup(
     },
     classifiers=[
         'Programming Language :: Python :: 3',
-        'License :: Other/Proprietary License',  # Update if using a different license
+        'License :: OSI Approved :: MIT License',  # Update if using a different license
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.9',
