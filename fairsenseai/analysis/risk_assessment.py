@@ -7,7 +7,7 @@ NIST AI Risk Management Framework guidelines using embedding-based similarity se
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 import traceback
 
 import faiss
@@ -153,6 +153,7 @@ def analyze_text_for_risks(
     top_k_risk: int = 5,
     top_k_ai_rmf: int = 1,
     embedding_model_name: str = "all-MiniLM-L6-v2",
+    allow_filesystem_access: Optional[bool] = True,
     progress: gr.Progress = gr.Progress(),
 ) -> Tuple[str, str]:
     """
@@ -166,10 +167,12 @@ def analyze_text_for_risks(
         Number of similar risks to retrieve, by default 5
     top_k_ai_rmf : int, optional
         Number of AI RMF matches per risk to retrieve, by default 1
-    progress : gr.Progress, optional
-        Gradio progress bar object for tracking analysis progress, by default gr.Progress()
     embedding_model_name : str, optional
         Name of the sentence transformer model to use as embedder, by default "all-MiniLM-L6-v2"
+    allow_filesystem_access
+        Whether to allow filesystem access for file uploads, required to save results
+    progress : gr.Progress, optional
+        Gradio progress bar object for tracking analysis progress, by default gr.Progress()
 
     Returns
     -------
@@ -238,7 +241,13 @@ def analyze_text_for_risks(
         csv_path = csv_folder_path / (
             f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         )
-        top_risks_ai_rmf_df.to_csv(csv_path, index=False)
+
+        if allow_filesystem_access:
+            top_risks_ai_rmf_df.to_csv(csv_path, index=False)
+        else:
+            print(
+                "[ERROR] Not saving results to CSV because filesystem access is not allowed."
+            )
 
         risks_str = ""
         for _, row in top_risks_ai_rmf_df.iterrows():
