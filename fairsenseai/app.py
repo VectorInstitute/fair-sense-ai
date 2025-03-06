@@ -64,8 +64,6 @@ def start_server(
 
     with demo.route("Bias Identification", "/bias"):
         gr.Markdown("# Bias Identification", elem_classes="page-title")
-    # with demo:
-    #     gr.Markdown("# Bias Identification", elem_classes="page-title")
 
         with gr.Tabs():
             # --- Text Analysis Tab ---
