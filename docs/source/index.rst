@@ -27,9 +27,15 @@ Highlights
 - ⚠️ **AI Risk Management**: Identifies potential AI risks and provides  structured risk assessments and mitigation strategies 
 - 🌱 **Green AI**: Optimized energy use of LLMs to reduce environmental impact.
 
+Video Tutorial
+--------------
+- ▶️ `Bias Analysis <https://drive.google.com/file/d/1TauruosZpTIG568-WYm8FF1MrsQmoiMS/view?usp=sharing>`_
+- ▶️ `AI Risk Management <https://drive.google.com/file/d/1JsoNWnidWTdJWYyJY4ROFZGNQ94GCxrX/view?usp=sharing>`_
+
+Contents
+--------
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    installation
    quickstart
@@ -40,3 +46,19 @@ Highlights
    troubleshooting
    license
    contact
+
+Bibliography
+~~~~~~~~~~~~
+To acknowledge the use of Fairsense-AI in your study, please cite the following article::
+
+   @misc{raza2025fairsenseairesponsibleaimeets,
+   title        = {FairSense-AI: Responsible AI Meets Sustainability},
+   author       = {Shaina Raza and Mukund Sayeeganesh Chettiar and Matin Yousefabadi and Tahniat Khan and Marcelo Lotif},
+   year         = 2025,
+   eprint       = {2503.02865},
+   archivePrefix= {arXiv},
+   primaryClass = {cs.CL},
+   url          = {https://arxiv.org/abs/2503.02865},
+   }
+
+The article is accessible online at: `FairSense-AI: Responsible AI Meets Sustainability <https://arxiv.org/abs/2503.02865>`_
