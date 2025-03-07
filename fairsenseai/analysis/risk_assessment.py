@@ -9,8 +9,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Tuple
 import traceback
-import warnings
-warnings.filterwarnings("ignore")
 
 import faiss
 import gradio as gr
