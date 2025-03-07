@@ -191,6 +191,20 @@ Run the following commands to ensure everything is ready:
   Use the CUDA-compatible version of PyTorch for better performance.
 
 ---
+## **Bibliography**
+
+To acknowledge the use of Fairsense-AI in your study, please consider citing our [article](https://arxiv.org/abs/2503.02865):
+
+```bibtex
+@article{raza2025fairsense,
+  title={FairSense-AI: Responsible AI Meets Sustainability},
+  author={Raza, Shaina and Chettiar, Mukund Sayeeganesh and Yousefabadi, Matin and Khan, Tahniat and Lotif, Marcelo},
+  journal={arXiv preprint arXiv:2503.02865},
+  year={2025}
+}
+```
+
+---
 
 ## **Contact**
 
