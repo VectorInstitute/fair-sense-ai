@@ -1,7 +1,7 @@
 
-# **FairSense-AI**
+# **Fairsense-AI**
 
-Fairsense-AIis a cutting-edge, AI-driven platform designed to promote transparency, fairness, and equity by analyzing bias in textual and visual content. Built with sustainability in mind, it leverages energy-efficient AI frameworks to ensure an eco-friendly approach to tackling societal biases.
+Fairsense-AI is a cutting edge, an AI-driven tool designed to analyze bias in text and visual content with sustainability in mind. It also offers a platform for risk identification and risk mitigation. With a strong emphasis on Bias Identification, Risk Management, and Sustainability, Fairsense-AI helps build trustworthy AI systems.
 
 ---
 
@@ -9,7 +9,7 @@ Fairsense-AIis a cutting-edge, AI-driven platform designed to promote transparen
 
 ### **Step 1: Install supporting tools**
 
-1. **Python 3.9+**  
+1. **Python 3.10+**  
    Ensure Python is installed. Download it [here](https://www.python.org/downloads/).
 
 
@@ -49,7 +49,7 @@ Fairsense-AIis a cutting-edge, AI-driven platform designed to promote transparen
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
    ```
 
-### **Step 2: Install Fair-Sense-AI**
+### **Step 2: Install Fairsense-AI**
 
 Install the `fair-sense-ai` package using pip:
 
@@ -126,10 +126,10 @@ start_server()
 
 ### **Launching the Application**
 
-Run the following command to start Fair-Sense-AI:
+Run the following command to start Fairsense-AI:
 
 ```bash
-fair-sense-AI
+fairsenseai
 ```
 
 This will launch the Gradio-powered interface in your default web browser.
@@ -154,10 +154,10 @@ This will launch the Gradio-powered interface in your default web browser.
 - Upload multiple images in the **Batch Image Analysis** tab.
 - Click **Analyze Images** for a detailed review.
 
-#### **5. AI Governance Insights**
-- Navigate to the **AI Governance and Safety** tab.
-- Choose a predefined topic or input your own query.
-- Click **Get Insights** for recommendations.
+#### **5. AI Risk Management**
+- Enter a brief description of your project/task.
+- Click **Analyze Risks**
+- Tool will display the relevant risks. It will also display the downloadable csv file with risk details, categories and suggested actions.
 
 ---
 
