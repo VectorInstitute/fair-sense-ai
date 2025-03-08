@@ -13,7 +13,6 @@ from fairsenseai.analysis.bias import (
 from fairsenseai.analysis.risk_assessment import analyze_text_for_risks
 from fairsenseai.runtime import get_runtime
 
-
 def start_server(
     make_public_url: Optional[bool] = True,
     allow_filesystem_access: Optional[bool] = True,
