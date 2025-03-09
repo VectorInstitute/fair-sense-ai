@@ -251,10 +251,15 @@ def start_server(
         gr.HTML(value=about)
         gr.HTML(footer)
 
+    # Ensuring risk_csv_folder_path is included in allowed_paths in the launch method.
+    risk_csv_folder_path = Path("risk-results")
+    risk_csv_folder_path.mkdir(parents=True, exist_ok=True)
+
     demo.queue().launch(
         share=make_public_url,
         prevent_thread_lock=prevent_thread_lock,
         inbrowser=launch_browser_on_startup,
+        allowed_paths=[risk_csv_folder_path],
     )
 
 
