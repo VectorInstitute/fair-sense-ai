@@ -15,10 +15,10 @@ from fairsenseai.runtime import get_runtime
 
 
 def start_server(
-        make_public_url: Optional[bool] = True,
-        allow_filesystem_access: Optional[bool] = True,
-        prevent_thread_lock: Optional[bool] = False,
-        launch_browser_on_startup: Optional[bool] = False,
+    make_public_url: Optional[bool] = True,
+    allow_filesystem_access: Optional[bool] = True,
+    prevent_thread_lock: Optional[bool] = False,
+    launch_browser_on_startup: Optional[bool] = False,
 ) -> None:
     """
     Starts the Gradio server with multiple tabs for text analysis, image analysis,
@@ -253,7 +253,7 @@ def start_server(
         gr.HTML(footer)
 
     # Ensuring risk_csv_folder_path is included in allowed_paths in the launch method.
-    risk_csv_folder_path = Path(__file__).resolve().parent / "user_risk_results"
+    risk_csv_folder_path = Path("risk-results")
     risk_csv_folder_path.mkdir(parents=True, exist_ok=True)
 
     demo.queue().launch(

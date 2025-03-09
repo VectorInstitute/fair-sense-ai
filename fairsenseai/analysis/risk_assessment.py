@@ -150,11 +150,11 @@ class RiskEmbeddingIndex:
 
 def analyze_text_for_risks(
     text_input: str,
-    top_k_risk: int = 5,
-    top_k_ai_rmf: int = 1,
-    embedding_model_name: str = "all-MiniLM-L6-v2",
+    top_k_risk: Optional[int] = 5,
+    top_k_ai_rmf: Optional[int] = 1,
+    embedding_model_name: Optional[str] = "all-MiniLM-L6-v2",
     allow_filesystem_access: Optional[bool] = True,
-    progress: gr.Progress = gr.Progress(),
+    progress: Optional[gr.Progress] = gr.Progress(),
 ) -> Tuple[str, str]:
     """
     Analyzes input text for AI-related risks and maps them to AI RMF guidelines using embedding-based similarity search.
@@ -169,8 +169,8 @@ def analyze_text_for_risks(
         Number of AI RMF matches per risk to retrieve, by default 1
     embedding_model_name : str, optional
         Name of the sentence transformer model to use as embedder, by default "all-MiniLM-L6-v2"
-    allow_filesystem_access
-        Whether to allow filesystem access for file uploads, required to save results
+    allow_filesystem_access: bool, optional
+        Whether to allow filesystem access for file uploads, required to save results, by default True
     progress : gr.Progress, optional
         Gradio progress bar object for tracking analysis progress, by default gr.Progress()
 
@@ -236,7 +236,7 @@ def analyze_text_for_risks(
             f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...",
         )
 
-        csv_folder_path = main_dir / "user_risk_results"
+        csv_folder_path = Path("risk-results")
         csv_folder_path.mkdir(parents=True, exist_ok=True)
         csv_path = csv_folder_path / (
             f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
