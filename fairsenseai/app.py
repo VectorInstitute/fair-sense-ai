@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
 from pathlib import Path
+from functools import partial
 
 import gradio as gr
 
@@ -44,7 +45,7 @@ def start_server(
     >>> start_server()
     """
     # Initialize the runtime
-    get_runtime(allow_filesystem_access=allow_filesystem_access)
+    run_time = get_runtime(allow_filesystem_access=allow_filesystem_access)
 
     script_dir = Path(__file__).resolve().parent
     ui_dir = script_dir / "ui"
@@ -212,15 +213,30 @@ def start_server(
                     label="Try some examples",
                 )
 
-                csv_output_file = gr.File(
-                    label="Risks and Outcomes Traceability Matrix"
-                )
+                if allow_filesystem_access:
+                    csv_output_file = gr.File(
+                        label="Risks and Outcomes Traceability Matrix"
+                    )
+                    csv_folder_path = run_time.risk_default_directory
+                else:
+                    gr.Markdown(
+                        """
+                        ⚠️ **Note:** Filesystem access is disabled. CSV download is not available.
+                        """
+                    )
+                    csv_folder_path = None
+
                 highlighted_text = gr.HTML(label="Highlighted Text")
 
+                outputs = [highlighted_text, csv_output_file] if allow_filesystem_access else [highlighted_text]
+
+                # Partial function with csv_folder_path already provided
+                analyze_func = partial(analyze_text_for_risks, csv_folder_path=csv_folder_path)
+
                 analyze_button.click(
-                    analyze_text_for_risks,
-                    inputs=text_input,
-                    outputs=[highlighted_text, csv_output_file],
+                    analyze_func,
+                    inputs=[text_input],
+                    outputs=outputs,
                     show_progress=True,
                 )
 
@@ -252,15 +268,11 @@ def start_server(
         gr.HTML(value=about)
         gr.HTML(footer)
 
-    # Ensuring risk_csv_folder_path is included in allowed_paths in the launch method.
-    risk_csv_folder_path = Path("risk-results")
-    risk_csv_folder_path.mkdir(parents=True, exist_ok=True)
-
     demo.queue().launch(
         share=make_public_url,
         prevent_thread_lock=prevent_thread_lock,
         inbrowser=launch_browser_on_startup,
-        allowed_paths=[risk_csv_folder_path],
+        allowed_paths=run_time.get_allowed_paths(),
     )
 
 

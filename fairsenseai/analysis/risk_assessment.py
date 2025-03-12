@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Tuple, Optional
 import traceback
+import os
 
 import faiss
 import gradio as gr
@@ -17,6 +18,7 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 from fairsenseai.utils.helper import style_risks
+from fairsenseai.runtime import FairsenseRuntime
 
 
 class RiskEmbeddingIndex:
@@ -150,12 +152,12 @@ class RiskEmbeddingIndex:
 
 def analyze_text_for_risks(
     text_input: str,
+    csv_folder_path: str,
     top_k_risk: Optional[int] = 5,
     top_k_ai_rmf: Optional[int] = 1,
     embedding_model_name: Optional[str] = "all-MiniLM-L6-v2",
-    allow_filesystem_access: Optional[bool] = True,
     progress: Optional[gr.Progress] = gr.Progress(),
-) -> Tuple[str, str]:
+) -> tuple[str, str | None]:
     """
     Analyzes input text for AI-related risks and maps them to AI RMF guidelines using embedding-based similarity search.
 
@@ -163,14 +165,14 @@ def analyze_text_for_risks(
     ----------
     text_input : str
         The user scenario text describing an AI project to be analyzed
+    csv_folder_path: str
+        The folder path to save csv file. if None the csv will not be saved.
     top_k_risk : int, optional
         Number of similar risks to retrieve, by default 5
     top_k_ai_rmf : int, optional
         Number of AI RMF matches per risk to retrieve, by default 1
     embedding_model_name : str, optional
         Name of the sentence transformer model to use as embedder, by default "all-MiniLM-L6-v2"
-    allow_filesystem_access: bool, optional
-        Whether to allow filesystem access for file uploads, required to save results, by default True
     progress : gr.Progress, optional
         Gradio progress bar object for tracking analysis progress, by default gr.Progress()
 
@@ -187,11 +189,7 @@ def analyze_text_for_risks(
     Examples
     --------
     >>> scenario = "We're developing a facial recognition system for public spaces"
-    >>> highlighted, csv_path = analyze_text_for_risks(
-    ...     scenario,
-    ...     top_k_risk=3,
-    ...     top_k_ai_rmf=2
-    ... )
+    >>> highlighted, csv_path = analyze_text_for_risks(scenario,top_k_risk=3,top_k_ai_rmf=2)
     >>> print(f"Results saved to: {csv_path}")
 
     Raises
@@ -236,17 +234,15 @@ def analyze_text_for_risks(
             f"Found {len(top_risks_ai_rmf_df)} relevant risks. Constructing prompt...",
         )
 
-        csv_folder_path = Path("risk-results")
-        csv_folder_path.mkdir(parents=True, exist_ok=True)
-        csv_path = csv_folder_path / (
-            f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        )
-
-        if allow_filesystem_access:
-            top_risks_ai_rmf_df.to_csv(csv_path, index=False)
+        csv_file_path = None
+        if csv_folder_path is not None:
+            csv_folder_path = Path(csv_folder_path)
+            csv_file_name = f"Risk_Outcome_Matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            csv_file_path = os.path.join(csv_folder_path, csv_file_name)
+            top_risks_ai_rmf_df.to_csv(csv_file_path, index=False)
         else:
             print(
-                "[ERROR] Not saving results to CSV because filesystem access is not allowed."
+                "Not saving results to CSV because filesystem access is not allowed."
             )
 
         risks_str = ""
@@ -265,9 +261,10 @@ def analyze_text_for_risks(
         highlighted_output = style_risks(top_risks_ai_rmf_df)
 
         progress(1.0, "Analysis complete.")
-        return highlighted_output, str(csv_path)
+        return highlighted_output, csv_file_path
 
     except Exception as e:
+        print('error occured')
         error_trace = traceback.format_exc()
         print(f"Error in analyze_text_for_risks: {e}\n{error_trace}")
         progress(1.0, "Analysis failed.")
