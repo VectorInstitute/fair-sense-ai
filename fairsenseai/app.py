@@ -213,18 +213,12 @@ def start_server(
                     label="Try some examples",
                 )
 
+                csv_folder_path = None
                 if allow_filesystem_access:
                     csv_output_file = gr.File(
                         label="Risks and Outcomes Traceability Matrix"
                     )
                     csv_folder_path = run_time.risk_default_directory
-                else:
-                    gr.Markdown(
-                        """
-                        ⚠️ **Note:** Filesystem access is disabled. CSV download is not available.
-                        """
-                    )
-                    csv_folder_path = None
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
 
