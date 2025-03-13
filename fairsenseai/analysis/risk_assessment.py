@@ -18,7 +18,6 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 from fairsenseai.utils.helper import style_risks
-from fairsenseai.runtime import FairsenseRuntime
 
 
 class RiskEmbeddingIndex:
@@ -152,7 +151,7 @@ class RiskEmbeddingIndex:
 
 def analyze_text_for_risks(
     text_input: str,
-    csv_folder_path: str,
+    csv_folder_path: Optional[str] = None,
     top_k_risk: Optional[int] = 5,
     top_k_ai_rmf: Optional[int] = 1,
     embedding_model_name: Optional[str] = "all-MiniLM-L6-v2",
@@ -166,7 +165,7 @@ def analyze_text_for_risks(
     text_input : str
         The user scenario text describing an AI project to be analyzed
     csv_folder_path: str
-        The folder path to save csv file. if None the csv will not be saved.
+        The folder path to save csv file. if None the csv will not be saved. by default None
     top_k_risk : int, optional
         Number of similar risks to retrieve, by default 5
     top_k_ai_rmf : int, optional
@@ -242,7 +241,7 @@ def analyze_text_for_risks(
             top_risks_ai_rmf_df.to_csv(csv_file_path, index=False)
         else:
             print(
-                "Not saving results to CSV because filesystem access is not allowed."
+                "Not saving results to CSV because csv_folder_path is None."
             )
 
         risks_str = ""

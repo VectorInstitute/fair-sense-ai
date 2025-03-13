@@ -124,21 +124,26 @@ class FairsenseRuntime(object):
         except Exception as e:
             return f"Error saving file: {e}"
 
-    def add_allowed_path(self, path):
+    def add_allowed_path(self, path: str) -> str:
         """
         Adds a path to the list of allowed paths for file system access.
 
         Parameters
-        ----------
+        -------
         path
             The path to add to allowed paths.
+
+        Returns
+        -------
+        str
+            The absolute path that was added.
         """
         if isinstance(path, str):
             path = os.path.abspath(path)
         self.allowed_paths.append(path)
         return path
 
-    def get_allowed_paths(self):
+    def get_allowed_paths(self) -> list[str]:
         """
         Returns the list of allowed paths for file system access.
 

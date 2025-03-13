@@ -219,6 +219,8 @@ def start_server(
                         label="Risks and Outcomes Traceability Matrix"
                     )
                     csv_folder_path = run_time.risk_default_directory
+                else:
+                    print("Not saving results to CSV because filesystem access is not allowed.")
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
 
