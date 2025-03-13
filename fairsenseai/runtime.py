@@ -171,7 +171,7 @@ class FairsenseGPURuntime(FairsenseRuntime):
         """
         super().__init__(allow_filesystem_access=allow_filesystem_access)
         self.text_model_hf_id = "unsloth/Llama-3.2-1B-Instruct"
-        self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id, use_fast=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_hf_id)
         self.tokenizer.add_special_tokens(
             {
                 "eos_token": "</s>",

@@ -62,4 +62,4 @@ Install the ``fair-sense-ai`` package using pip:
 Tutorial on Local Inference & Setup
 -----------------------------------
 
-Refer to `Fairsense-AI Tutorial <_static/attachment/Fairense-AI_Tutorial.pdf>`_ for detailed instructions on local inference and setup.
+Refer to `Fairsense-AI Tutorial <_static/attachment/Fairsense-AI_Tutorial.pdf>`_ for detailed instructions on local inference and setup.

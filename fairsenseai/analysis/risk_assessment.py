@@ -16,7 +16,6 @@ import gradio as gr
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-
 from fairsenseai.utils.helper import style_risks
 
 
