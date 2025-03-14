@@ -3,7 +3,7 @@ name = "fair-sense-ai"
 version = "1.0.5"
 description = ""
 authors = ["Vector AI Engineering <ai_engineering@vectorinstitute.ai>"]
-license = "Apache-2.0"
+license = "Creative Commons BY-NC 4.0"
 readme = "README.md"
 repository = "https://github.com/VectorInstitute/fair-sense-ai"
 documentation = "https://vectorinstitute.github.io/FairSense-AI/"
@@ -12,7 +12,7 @@ packages = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache-2.0 License",
+    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
 ]
 
