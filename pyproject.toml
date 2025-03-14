@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fair-sense-ai"
-version = "1.0.5"
+version = "1.0.6"
 description = ""
 authors = ["Shaina Raza, PhD <shaina.raza@torontomu.ca>"]
 license = "Creative Commons BY-NC 4.0"
@@ -21,15 +21,16 @@ python = "^3.10"
 ollama = "^0.4.5"
 transformers = "^4.47.1"
 pillow = "^10.4"
-pandas = "^2.2.3"
+pandas = "^2.2.2"
 gradio = "^5"
 plotly = "^5.24.1"
 pytesseract = "^0.3.13"
 opencv-python = "^4.10.0.84"
 numpy = "^1.26"
-torch = "2.2.2"
+torch = "^2.2.2"
 sentence-transformers = "^3.4.1"
 faiss-cpu = "^1.10.0"
+torchvision = "^0.17.2"
 
 [tool.poetry.group.docs]
 optional = true
