@@ -16,4 +16,3 @@ _autosummary
 /__pycache__/
 /installer/__pycache__/
 package/
-fairsenseai/user_risk_results
