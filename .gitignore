@@ -16,3 +16,4 @@ _autosummary
 /__pycache__/
 /installer/__pycache__/
 package/
+bin/
