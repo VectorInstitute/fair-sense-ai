@@ -33,13 +33,23 @@ class FairsenseRuntime(object):
             Whether to allow file system access for saving results.
         """
         self.allow_filesystem_access = allow_filesystem_access
+        self.allowed_paths = []
+
         if self.allow_filesystem_access:
             print("Starting FairsenseRuntime with file system access.")
-            self.default_directory = "bias-results"
-            os.makedirs(self.default_directory, exist_ok=True)
+
+            # Making bias results directory and adding it to allowed paths
+            self.bias_default_directory = "bias-results"
+            os.makedirs(self.bias_default_directory, exist_ok=True)
+            self.add_allowed_path(self.bias_default_directory)
+
+            # Making risk results directory and adding it to allowed paths
+            self.risk_default_directory = "risk-results"
+            os.makedirs(self.risk_default_directory, exist_ok=True)
+            self.add_allowed_path(self.risk_default_directory)
+
         else:
             print("Starting FairsenseRuntime without file system access.")
-
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.blip_model_id = "Salesforce/blip-image-captioning-base"
@@ -107,13 +117,43 @@ class FairsenseRuntime(object):
             print("[ERROR] Not saving results to CSV because filesystem access is not allowed.")
             return None
 
-        file_path = os.path.join(self.default_directory, filename)  # Combine directory and filename
+        file_path = os.path.join(self.bias_default_directory, filename)  # Combine directory and filename
         try:
             df.to_csv(file_path, index=False)  # Save the DataFrame as a CSV file
             return file_path  # Return the full file path for reference
         except Exception as e:
             return f"Error saving file: {e}"
-    
+
+    def add_allowed_path(self, path: str) -> str:
+        """
+        Adds a path to the list of allowed paths for file system access.
+
+        Parameters
+        -------
+        path
+            The path to add to allowed paths.
+
+        Returns
+        -------
+        str
+            The absolute path that was added.
+        """
+        if isinstance(path, str):
+            path = os.path.abspath(path)
+        self.allowed_paths.append(path)
+        return path
+
+    def get_allowed_paths(self) -> list[str]:
+        """
+        Returns the list of allowed paths for file system access.
+
+        Returns
+        -------
+        list
+            List of allowed paths.
+        """
+        return self.allowed_paths
+
 class FairsenseGPURuntime(FairsenseRuntime):
     """
     GPU runtime class for Fairsense.
@@ -308,7 +348,7 @@ class FairsenseCPURuntime(FairsenseRuntime):
         if progress:
             progress(1.0, "Done")
         return generated_text
-    
+
 
 def get_runtime(allow_filesystem_access=True) -> FairsenseRuntime:
     """
