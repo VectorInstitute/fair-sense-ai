@@ -5,6 +5,8 @@ datas = []
 datas += collect_data_files('gradio')
 datas += collect_data_files('gradio_client')
 datas += collect_data_files('safehttpx')
+datas.append(('../fairsenseai/ui', 'fairsenseai/ui'))
+datas.append(('../fairsenseai/dataframes_and_indexes', 'fairsenseai/dataframes_and_indexes'))
 
 
 a = Analysis(
