@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fair_sense_ai',
-    version='1.0.5',  # Update this version with each new release
+    version='1.0.6',  # Update this version with each new release
     packages=find_packages(),
     include_package_data=True,
     package_data={
@@ -20,6 +20,7 @@ setup(
     license='Creative Commons BY-NC 4.0',  # Update to your chosen license
     install_requires=[
         'torch',
+        'torchvision',
         'transformers',
         'Pillow',
         'pandas',
