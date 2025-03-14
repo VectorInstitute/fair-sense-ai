@@ -10,18 +10,18 @@ echo "Building for $(uname)"
 if [ "$(uname)" == "Darwin" ]; then
   echo "Building MacOS app"
 
-  pyinstaller installer/fairsenseai-mac.spec -y
+  pyinstaller executable/fairsenseai-mac.spec -y
 
 elif [[ "$(uname)" =~ ^MINGW64_NT-10.0 ]] || [[ "$(uname)" =~ ^MSYS_NT-10.0 ]]; then
   echo "Building Windows App"
   echo "Logs can be located at installer\make.log"
   
-  pyinstaller installer/fairsenseai-win+linux.spec -y > installer/make.log 2>&1
+  pyinstaller executable/fairsenseai-win+linux.spec -y > executable/make.log 2>&1
 
 elif [ "$(uname)" == "Linux" ]; then
   echo "Building Linux App"
 
-  pyinstaller installer/fairsenseai-win+linux.spec -y
+  pyinstaller executable/fairsenseai-win+linux.spec -y
 
 else
   echo "Unsupported operating system: $(uname)"
