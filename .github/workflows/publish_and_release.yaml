@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docs
-          path: fair-sense-ai/docs/build/html
+          path: ./docs/build/html
 
   build_executable:
     runs-on: ${{ matrix.os }}
@@ -107,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FairSenseAI-${{ runner.os }}-${{ runner.arch }}
-          path: ./fair-sense-ai/dist/*
+          path: ./dist/*
 
   release_github:
     needs: deploy
