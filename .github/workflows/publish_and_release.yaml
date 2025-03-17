@@ -102,7 +102,7 @@ jobs:
         run: |
           pwd
           ls -la
-          ls -la ./fair-sense-ai/dist
+          ls -la ./dist
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
