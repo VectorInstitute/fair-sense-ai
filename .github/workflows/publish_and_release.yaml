@@ -127,13 +127,16 @@ jobs:
     needs: [build_docs, build_executable]
     runs-on: ubuntu-latest
     steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          pattern: '*'
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1.16.0
         with:
           tag: ${{ github.event.inputs.tag }}
           artifacts: |
-            dist/FairSenseAI/FairSenseAI-*.exe
-            dist/FairSenseAI-*.tgz
-            docs/build/docs.zip
+            ./artifacts/**/*
           generateReleaseNotes: true
