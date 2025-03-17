@@ -100,30 +100,23 @@ jobs:
         run: |
           poetry install
           pip install pyinstaller pillow
-      - name: Build executable (mac and linux)
-        if: matrix.os != 'windows-latest'
-        run: ./executable/make.sh
-      - name: Build executable (windows)
-        if: matrix.os == 'windows-latest'
+      - name: Build executable
         shell: bash
         run: ./executable/make.sh
-      - name: Debugging (mac and linux)
-        if: matrix.os != 'windows-latest'
+      - name: Debugging
+        if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           pwd
           ls -la
           ls -la ./dist
-      - name: Debugging (windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          dir
-          dir dist
+          ls -la ./dist/FairSenseAI
       - name: Rename executable build (mac)
         if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
         run: mv dist/FairSenseAI.tgz dist/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.tgz
       - name: Rename executable build (windows)
         if: matrix.os == 'windows-latest'
-        run: Rename-Item -Path "dist/FairSenseAI.exe" -NewName "dist/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe"
+        run: Rename-Item -Path "dist/FairSenseAI/FairSenseAI.exe" -NewName "dist/FairSenseAI/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe"
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
