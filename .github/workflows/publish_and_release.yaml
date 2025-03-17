@@ -10,6 +10,10 @@ on:
       version:
         description: 'Version to deploy'
         required: true
+      draft:
+        description: 'Draft release'
+        required: false
+        default: 'false'
 
 jobs:
   release_to_pypi:
@@ -137,3 +141,4 @@ jobs:
             dist/FairSenseAI-*.tgz
             docs/build/docs.zip
           generateReleaseNotes: true
+          draft: ${{ inputs.draft }}
