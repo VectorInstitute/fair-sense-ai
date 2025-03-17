@@ -7,9 +7,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to deploy'
-        required: true
       tag:
         description: 'Git tag to use'
         required: true
@@ -134,6 +131,7 @@ jobs:
         id: create_release
         uses: ncipollo/release-action@v1.16.0
         with:
+          tag_name: ${{ github.event.inputs.tag }}
           artifacts: |
             dist/FairSenseAI/FairSenseAI-*.exe
             dist/FairSenseAI-*.tgz
