@@ -10,10 +10,9 @@ on:
       version:
         description: 'Version to deploy'
         required: true
-      draft:
-        description: 'Draft release'
-        required: false
-        default: 'false'
+      tag:
+        description: 'Git tag to use'
+        required: true
 
 jobs:
   release_to_pypi:
@@ -115,7 +114,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: mv "dist/FairSenseAI/FairSenseAI.exe" "dist/FairSenseAI/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe"
       - name: Debugging
-        if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           pwd
@@ -141,4 +139,3 @@ jobs:
             dist/FairSenseAI-*.tgz
             docs/build/docs.zip
           generateReleaseNotes: true
-          draft: ${{ inputs.draft }}
