@@ -40,7 +40,7 @@ jobs:
       - name: Install apt dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-opencv
+          sudo apt-get install -y libgl1 libglib2.0-0 python3-opencv
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
