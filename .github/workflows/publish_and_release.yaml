@@ -55,12 +55,16 @@ jobs:
           poetry install --no-root
       - name: Build docs
         run: poetry run sphinx-build -b html docs/source docs/build/html
+      - name: Zip artifacts
+        run: |
+          cd docs/build
+          zip -r docs.zip html/
       - name: Debugging
         run: |
           pwd
           ls -la
+          ls -la docs/build
           ls -la docs/build/html
-          ls -la docs/source
       - name: Upload docs
         uses: actions/upload-artifact@v4
         with:
@@ -98,11 +102,23 @@ jobs:
           pip install pyinstaller pillow
       - name: Build executable
         run: ./executable/make.sh
-      - name: Debugging
+      - name: Rename executable build (mac and linux)
+        if: matrix.os != 'windows-latest'
+        run: mv dist/FairSenseAI.tgz dist/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.tgz
+      - name: Rename executable build (windows)
+        if: matrix.os == 'windows-latest'
+        run: Rename-Item -Path "dist/FairSenseAI.exe" -NewName "dist/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe"
+      - name: Debugging (mac and linux)
+        if: matrix.os != 'windows-latest'
         run: |
           pwd
           ls -la
           ls -la ./dist
+      - name: Debugging (windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          dir
+          dir dist
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
@@ -118,8 +134,7 @@ jobs:
         uses: ncipollo/release-action@v1.16.0
         with:
           artifacts: |
-            dist/FairSenseAI-*.exe
-            dist/FairSenseAI-*.dmg
-            dist/FairSenseAI-*.AppImage
-            docs/build/html/**/*
+            dist/FairSenseAI.exe
+            dist/FairSenseAI-*.tgz
+            docs/build/docs.zip
           generateReleaseNotes: true
