@@ -12,7 +12,7 @@ on:
         required: true
 
 jobs:
-  deploy:
+  release_to_pypi:
     runs-on: ubuntu-latest
     steps:
       - name: Install apt dependencies
@@ -110,12 +110,16 @@ jobs:
           path: ./dist/*
 
   release_github:
-    needs: deploy
+    needs: [build_docs, build_executable]
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1.16.0
         with:
-          artifacts: "dist/*"
+          artifacts: |
+            dist/FairSenseAI-*.exe
+            dist/FairSenseAI-*.dmg
+            dist/FairSenseAI-*.AppImage
+            docs/build/html/**/*
           generateReleaseNotes: true
