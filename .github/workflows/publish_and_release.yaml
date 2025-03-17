@@ -100,7 +100,12 @@ jobs:
         run: |
           poetry install
           pip install pyinstaller pillow
-      - name: Build executable
+      - name: Build executable (mac and linux)
+        if: matrix.os != 'windows-latest'
+        run: ./executable/make.sh
+      - name: Build executable (windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
         run: ./executable/make.sh
       - name: Debugging (mac and linux)
         if: matrix.os != 'windows-latest'
