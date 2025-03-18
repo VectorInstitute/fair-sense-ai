@@ -101,13 +101,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Rename-Item -Path "dist" -NewName "FairSenseAI"
-          Compress-Archive -Path "FairSenseAI" -DestinationPath FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip -Force
+          Rename-Item -Path "dist" -NewName "fair-sense-ai"
+          Compress-Archive -Path "fair-sense-ai" -DestinationPath FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip -Force
       - name: Create zip archive (Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          mv dist FairSenseAI
-          zip -r FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip dist/
+          mv dist fair-sense-ai
+          zip -r FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip fair-sense-ai/
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
