@@ -134,6 +134,9 @@ jobs:
           file ./artifacts/docs.zip
           file ./artifacts/FairSenseAI-*.exe
           file ./artifacts/FairSenseAI-*.tgz
+          ls -lha ./artifacts/docs.zip
+          ls -lha ./artifacts/FairSenseAI-*.exe
+          ls -lha ./artifacts/FairSenseAI-*.tgz
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1.16.0
