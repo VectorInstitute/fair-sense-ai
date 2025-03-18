@@ -101,8 +101,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          ls "dist" | Format-List
-          ls "dist/FairSenseAI" | Format-List
           Rename-Item -Path "dist" -NewName "fair-sense-ai"
           Compress-Archive -Path "fair-sense-ai" -DestinationPath FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip -Force
       - name: Create zip archive (Unix)
