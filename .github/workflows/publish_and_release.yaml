@@ -137,6 +137,7 @@ jobs:
 
   release_github:
     needs: [build_docs, build_executable]
+    if: always() # Always run this job, even if previous jobs fail
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
