@@ -59,17 +59,11 @@ jobs:
         run: |
           cd docs/build
           zip -r docs.zip html/
-      - name: Debugging
-        run: |
-          pwd
-          ls -la
-          ls -la docs/build
-          ls -la docs/build/html
       - name: Upload docs
         uses: actions/upload-artifact@v4
         with:
-          name: docs
-          path: ./docs/build/html
+          name: docs.zip
+          path: ./docs/build/docs.zip
 
   build_executable:
     runs-on: ${{ matrix.os }}
@@ -110,18 +104,18 @@ jobs:
         shell: bash
         if: matrix.os == 'windows-latest'
         run: mv "dist/FairSenseAI/FairSenseAI.exe" "dist/FairSenseAI/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe"
-      - name: Debugging
-        shell: bash
-        run: |
-          pwd
-          ls -la
-          ls -la ./dist
-          ls -la ./dist/FairSenseAI
       - name: Upload Build
         uses: actions/upload-artifact@v4
+        if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
         with:
-          name: FairSenseAI-${{ runner.os }}-${{ runner.arch }}
-          path: ./dist/*
+          name: FairSenseAI-${{ runner.os }}-${{ runner.arch }}.tgz
+          path: ./dist/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.tgz
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          name: FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe
+          path: ./dist/FairSenseAI/FairSenseAI-${{ runner.os }}-${{ runner.arch }}.exe
 
   release_github:
     needs: [build_docs, build_executable]
