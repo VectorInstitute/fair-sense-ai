@@ -126,6 +126,14 @@ jobs:
         with:
           path: ./artifacts
           pattern: '*'
+      - name: Debug artifacts
+        run: |
+          echo "=== Artifacts directory structure ==="
+          ls -la ./artifacts
+          echo "=== Checking if files are actually files ==="
+          file ./artifacts/docs.zip
+          file ./artifacts/FairSenseAI-*.exe
+          file ./artifacts/FairSenseAI-*.tgz
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1.16.0
