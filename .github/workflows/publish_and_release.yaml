@@ -42,10 +42,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1 libglib2.0-0 python3-opencv
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5.4.0
         with:
           python-version: "3.10"
-      - name: Install poetry with docs
+      - name: Install poetry
         run: |
           python -m pip install --upgrade pip
           pip install poetry
@@ -83,7 +83,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-opencv
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - uses: actions/setup-python@v5.4.0
         with:
           python-version: "3.10"
       - name: Install poetry
@@ -91,12 +96,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
       - name: Install dependencies
+        shell: bash
         run: |
+          poetry env use '3.10'
+          source .venv/bin/activate
           poetry install
           pip install pyinstaller pillow
       - name: Build executable
         shell: bash
         run: ./executable/make.sh
+      - name: Executable logs
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: Get-Content "./executable/make.log"
       - name: Create zip archive
         if: matrix.os == 'windows-latest'
         shell: pwsh
