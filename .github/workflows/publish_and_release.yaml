@@ -132,5 +132,7 @@ jobs:
         with:
           tag: ${{ github.event.inputs.tag }}
           artifacts: |
-            ./artifacts/**/*
+            ./artifacts/docs.zip
+            ./artifacts/FairSenseAI-*.exe
+            ./artifacts/FairSenseAI-*.tgz
           generateReleaseNotes: true
