@@ -14,7 +14,7 @@ if [ "$(uname)" == "Darwin" ]; then
 
 elif [[ "$(uname)" =~ ^MINGW64_NT-10.0 ]] || [[ "$(uname)" =~ ^MSYS_NT-10.0 ]]; then
   echo "Building Windows App"
-  echo "Logs can be located at installer\make.log"
+  echo "Logs can be located at executable\make.log"
   
   pyinstaller executable/fairsenseai-win+linux.spec -y > executable/make.log 2>&1
 

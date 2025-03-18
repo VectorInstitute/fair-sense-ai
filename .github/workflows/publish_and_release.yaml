@@ -97,9 +97,15 @@ jobs:
       - name: Build executable
         shell: bash
         run: ./executable/make.sh
-      - name: Zip executable build
-        shell: bash
-        run: zip -r FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip dist/
+      - name: Create zip archive
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/* -DestinationPath FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip -Force
+      - name: Create zip archive (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          zip -r FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip dist/
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
