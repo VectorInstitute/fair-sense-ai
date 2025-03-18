@@ -104,7 +104,10 @@ jobs:
           pip install pyinstaller pillow
       - name: Build executable
         shell: bash
-        run: ./executable/make.sh
+        run: |
+          poetry env use '3.10'
+          source .venv/bin/activate
+          ./executable/make.sh
       - name: Executable logs
         if: matrix.os == 'windows-latest'
         shell: pwsh
