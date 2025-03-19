@@ -72,10 +72,12 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-          - os: macos-latest # arm64 macOS
-          - os: macos-13 # x86_64 macOS
-          - os: ubuntu-22.04 # x86_64 linux, oldest available GH runner. Older libc for maximal compatibility
-          - os: ubuntu-22.04-arm # arm linux build
+          # Skipping the archs below produce builds that are too large and/or they
+          # won't work in because of code signature issues
+          # - os: macos-latest # arm64 macOS
+          # - os: macos-13 # x86_64 macOS
+          # - os: ubuntu-22.04 # x86_64 linux, oldest available GH runner. Older libc for maximal compatibility
+          # - os: ubuntu-22.04-arm # arm linux build
     steps:
       - name: Install apt dependencies
         if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-22.04-arm'
