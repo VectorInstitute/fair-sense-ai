@@ -1,0 +1,154 @@
+name: publish and release package
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to use'
+        required: true
+
+jobs:
+  release_to_pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install apt dependencies
+        run: |
+          sudo apt-get update
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Build package
+        run: poetry build
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  build_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install apt dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libglib2.0-0 python3-opencv
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.10"
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install dependencies with docs
+        run: |
+          poetry install --with docs
+          poetry install --no-root
+      - name: Build docs
+        run: poetry run sphinx-build -b html docs/source docs/build/html
+      - name: Zip artifacts
+        run: |
+          cd docs/build
+          zip -r docs.zip html/
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs.zip
+          path: ./docs/build/docs.zip
+
+  build_executable:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          # Skipping the archs below produce builds that are too large and/or they
+          # won't work in because of code signature issues
+          # - os: macos-latest # arm64 macOS
+          # - os: macos-13 # x86_64 macOS
+          # - os: ubuntu-22.04 # x86_64 linux, oldest available GH runner. Older libc for maximal compatibility
+          # - os: ubuntu-22.04-arm # arm linux build
+    steps:
+      - name: Install apt dependencies
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-22.04-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-opencv
+      - uses: actions/checkout@v4
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        shell: bash
+        run: |
+          poetry env use '3.10'
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
+          poetry install
+          pip install pyinstaller pillow
+      - name: Build executable
+        shell: bash
+        run: |
+          poetry env use '3.10'
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            source .venv/Scripts/activate
+            ./executable/make.sh
+            cat ./executable/make.log
+          else
+            source .venv/bin/activate
+            ./executable/make.sh
+          fi
+      - name: Create zip archive
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Rename-Item -Path "dist" -NewName "fair-sense-ai"
+          Compress-Archive -Path "fair-sense-ai" -DestinationPath FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip -Force
+      - name: Create zip archive (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          mv dist fair-sense-ai
+          zip -r FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip fair-sense-ai/
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip
+          path: FairSenseAI-${{ runner.os }}-${{ runner.arch }}.zip
+
+  release_github:
+    needs: [build_docs, build_executable]
+    if: always() # Always run this job, even if previous jobs fail
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          pattern: '*'
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1.16.0
+        with:
+          tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+          artifacts: |
+            ./artifacts/docs.zip/docs.zip
+            ./artifacts/FairSenseAI-*.zip/FairSenseAI-*.zip
+          generateReleaseNotes: true
