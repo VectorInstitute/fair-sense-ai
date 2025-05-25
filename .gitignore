@@ -17,3 +17,4 @@ _autosummary
 /installer/__pycache__/
 package/
 bin/
+emissions/
