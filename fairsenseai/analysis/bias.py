@@ -39,12 +39,12 @@ def analyze_text_for_bias(
 
     Returns
     -------
-    Tuple[str, str]
+    Tuple[str, str, str]
         A tuple containing the highlighted text with bias words, the detailed analysis and the bias score.
 
     Example
     -------
-    >>> highlighted, analysis = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
+    >>> highlighted, analysis, score = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
     """
 
     progress(0, "Initializing analysis...")
@@ -58,6 +58,7 @@ def analyze_text_for_bias(
             f"Mention specific phrases or language that contribute to bias, and describe the tone of the text. "
             f"Mention who is the targeted group (if any). "
             f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased."
+            f"Also provide a score from 0 to 10 indicating the level of bias, where 0 is unbiased and 10 is highly biased.\n\n"
             f"Response format:\nScore: <number>\nExplanation: <paragraph>\n\n"
             f"Text: \"{text_input}\""
         )
