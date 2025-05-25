@@ -95,11 +95,12 @@ def start_server(
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
                 detailed_analysis = gr.HTML(label="Detailed Analysis")
+                score = gr.HTML(label="Bias Score")
 
                 analyze_button.click(
                     analyze_text_for_bias,
                     inputs=[text_input, use_summarizer_checkbox_text],
-                    outputs=[highlighted_text, detailed_analysis],
+                    outputs=[highlighted_text, detailed_analysis, score],
                     show_progress=True,
                 )
 
