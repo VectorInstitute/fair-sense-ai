@@ -10,3 +10,4 @@ highlighted_text, detailed_analysis, score = analyze_text_for_bias(text_input,us
 print("Highlighted Text:", highlighted_text)
 print("Detailed Analysis:", detailed_analysis)
 print("Bias Score:", score)
+print("\n")

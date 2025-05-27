@@ -24,7 +24,7 @@ def analyze_text_for_bias(
     text_input: str,
     use_summarizer: bool,
     progress: gr.Progress = gr.Progress()
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str, int]:
     """
     Analyzes a given text for bias and provides a detailed analysis.
 
@@ -87,10 +87,10 @@ def analyze_text_for_bias(
         highlighted_text = highlight_bias(text_input, biased_words)
 
         progress(1.0, "Analysis complete.")
-        return highlighted_text, processed_response, str(bias_score)
+        return highlighted_text, processed_response, bias_score
     except Exception as e:
         progress(1.0, "Analysis failed.")
-        return f"Error: {e}", "", str(-1)  # -1 as fallback for bias score
+        return f"Error: {e}", "", -1  # -1 as fallback for bias score
     
 def analyze_image_for_bias(
     image: Image,
@@ -222,14 +222,14 @@ def analyze_text_csv(
                     "row_index": i + 1,
                     "text": highlighted_text,
                     "analysis": analysis,
-                    "score": score
+                    "bias_score": score
                 })
             except Exception as e:
                 results.append({
                     "row_index": i + 1,
                     "text": "Error",
                     "analysis": str(e),
-                    "score": str(-1) 
+                    "bias_score": -1
                 })
 
         result_df = pd.DataFrame(results)

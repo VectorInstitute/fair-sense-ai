@@ -95,7 +95,7 @@ def start_server(
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
                 detailed_analysis = gr.HTML(label="Detailed Analysis")
-                score = gr.HTML(label="Bias Score")
+                score = gr.Number(label="Bias Score")
 
                 analyze_button.click(
                     analyze_text_for_bias,
