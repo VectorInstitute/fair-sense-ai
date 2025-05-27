@@ -32,6 +32,7 @@ setup(
         'sentence-transformers',
         'ollama',
         'faiss-cpu',
+        'codecarbon',
         # Add other dependencies as needed
     ],
     entry_points={
