@@ -16,6 +16,9 @@ import torch
 import gradio as gr
 import re
 
+logger = logging.getLogger(__name__)
+
+
 
 from fairsenseai.runtime import generate_response_with_model, get_runtime
 from fairsenseai.utils.helper import highlight_bias, post_process_response, preprocess_image
@@ -39,8 +42,8 @@ def analyze_text_for_bias(
 
     Returns
     -------
-    Tuple[str, str, str]
-        A tuple containing the highlighted text with bias words, the detailed analysis and the bias score.
+    Tuple[str, str, int]
+        A tuple containing the highlighted text with bias words, the detailed analysis and the bias score percentage.
 
     Example
     -------
@@ -58,7 +61,7 @@ def analyze_text_for_bias(
             f"Mention specific phrases or language that contribute to bias, and describe the tone of the text. "
             f"Mention who is the targeted group (if any). "
             f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased."
-            f"Also provide a score from 0 to 10 indicating the level of bias, where 0 is unbiased and 10 is highly biased.\n\n"
+            f"Also provide a score from 0 to 100 indicating the level of bias as a percentage, where 0% is unbiased and 100% is highly biased.\n\n"
             f"Response format:\nScore: <number>\nExplanation: <paragraph>\n\n"
             f"Text: \"{text_input}\""
         )
@@ -70,7 +73,18 @@ def analyze_text_for_bias(
         )
         
         score_match = re.search(r"Score:\s*(\d{1,3})", response)
-        bias_score = int(score_match.group(1)) if score_match else -1  # -1 as fallback if not found
+        bias_score = -1
+        if score_match:
+            try:
+                score_value = int(score_match.group(1))
+                if 0 <= score_value <= 100:
+                    bias_score = score_value
+                else:
+                    logger.warning(f"Bias score out of range (0–100): {score_value}")
+            except ValueError:
+                logger.info(f"Unable to parse bias score: {score_match.group(1)}")
+        else:
+            logger.info("Bias score not found in the response")
         # Extracting the explanation part
         explanation_match = re.search(r"Explanation:\s*(.*)", response, re.DOTALL)
         explanation_text = explanation_match.group(1).strip() if explanation_match else response
@@ -222,14 +236,14 @@ def analyze_text_csv(
                     "row_index": i + 1,
                     "text": highlighted_text,
                     "analysis": analysis,
-                    "bias_score": score
+                    "bias_score_percentage": f"{score}%" if score != -1 else "N/A"
                 })
             except Exception as e:
                 results.append({
                     "row_index": i + 1,
                     "text": "Error",
                     "analysis": str(e),
-                    "bias_score": -1
+                    "bias_score_percentage": -1
                 })
 
         result_df = pd.DataFrame(results)
