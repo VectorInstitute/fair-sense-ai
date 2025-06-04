@@ -60,7 +60,7 @@ def analyze_text_for_bias(
             f"Analyze the following text for bias. Be concise, focusing only on relevant details. "
             f"Mention specific phrases or language that contribute to bias, and describe the tone of the text. "
             f"Mention who is the targeted group (if any). "
-            f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased."
+            f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased. "
             f"Also provide a score from 0 to 100 indicating the level of bias as a percentage, where 0% is unbiased and 100% is highly biased.\n\n"
             f"Response format:\nScore: <number>\nExplanation: <paragraph>\n\n"
             f"Text: \"{text_input}\""
