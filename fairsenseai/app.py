@@ -95,11 +95,12 @@ def start_server(
 
                 highlighted_text = gr.HTML(label="Highlighted Text")
                 detailed_analysis = gr.HTML(label="Detailed Analysis")
+                score = gr.Number(label="Bias Score (%) [0 = Unbiased, 100 = Highly Biased]", precision=0)
 
                 analyze_button.click(
                     analyze_text_for_bias,
                     inputs=[text_input, use_summarizer_checkbox_text],
-                    outputs=[highlighted_text, detailed_analysis],
+                    outputs=[highlighted_text, detailed_analysis, score],
                     show_progress=True,
                 )
 
@@ -149,6 +150,8 @@ def start_server(
                     analyze_csv_button = gr.Button("Analyze CSV")
 
                 csv_results = gr.HTML(label="CSV Analysis Results")
+                
+                gr.Markdown("**Note:** A bias score of 0% means the text is unbiased, while 100% indicates high bias.")
 
                 analyze_csv_button.click(
                     analyze_text_csv,

@@ -14,6 +14,11 @@ import pandas as pd
 import pytesseract
 import torch
 import gradio as gr
+import re
+
+logger = logging.getLogger(__name__)
+
+
 
 from fairsenseai.runtime import generate_response_with_model, get_runtime
 from fairsenseai.utils.helper import highlight_bias, post_process_response, preprocess_image
@@ -22,7 +27,7 @@ def analyze_text_for_bias(
     text_input: str,
     use_summarizer: bool,
     progress: gr.Progress = gr.Progress()
-) -> Tuple[str, str]:
+) -> Tuple[str, str, int]:
     """
     Analyzes a given text for bias and provides a detailed analysis.
 
@@ -37,12 +42,12 @@ def analyze_text_for_bias(
 
     Returns
     -------
-    Tuple[str, str]
-        A tuple containing the highlighted text with bias words and the detailed analysis.
+    Tuple[str, str, int]
+        A tuple containing the highlighted text with bias words, the detailed analysis and the bias score percentage.
 
     Example
     -------
-    >>> highlighted, analysis = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
+    >>> highlighted, analysis, score = analyze_text_for_bias("This text may contain bias.", use_summarizer=True)
     """
 
     progress(0, "Initializing analysis...")
@@ -55,7 +60,9 @@ def analyze_text_for_bias(
             f"Analyze the following text for bias. Be concise, focusing only on relevant details. "
             f"Mention specific phrases or language that contribute to bias, and describe the tone of the text. "
             f"Mention who is the targeted group (if any). "
-            f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased.\n\n"
+            f"Provide your response as a clear and concise paragraph. If no bias is found, state that the text appears unbiased. "
+            f"Also provide a score from 0 to 100 indicating the level of bias as a percentage, where 0% is unbiased and 100% is highly biased.\n\n"
+            f"Response format:\nScore: <number>\nExplanation: <paragraph>\n\n"
             f"Text: \"{text_input}\""
         )
 
@@ -64,9 +71,29 @@ def analyze_text_for_bias(
             prompt,
             progress=lambda x, desc="": progress(0.3 + x * 0.4, desc),
         )
+        
+        score_match = re.search(r"Score:\s*(\d{1,3})", response)
+        bias_score = -1
+        if score_match:
+            try:
+                score_value = int(score_match.group(1))
+                if 0 <= score_value <= 100:
+                    bias_score = score_value
+                else:
+                    logger.warning(f"Bias score out of range (0–100): {score_value}")
+            except ValueError:
+                logger.info(f"Unable to parse bias score: {score_match.group(1)}")
+        else:
+            logger.info("Bias score not found in the response")
+        # Extracting the explanation part
+        explanation_match = re.search(r"Explanation:\s*(.*)", response, re.DOTALL)
+        explanation_text = explanation_match.group(1).strip() if explanation_match else response
+        # Remove the "Score" and score output from the explanation
+        explanation_text = re.sub(r"Score:\s*\d{1,3}", "", explanation_text).strip()
 
+        
         progress(0.7, "Post-processing response...")
-        processed_response = post_process_response(response, use_summarizer=use_summarizer)
+        processed_response = post_process_response(explanation_text, use_summarizer=use_summarizer)
 
         progress(0.9, "Highlighting text bias...")
         bias_section = response.split("Biased words:")[-1].strip() if "Biased words:" in response else ""
@@ -74,10 +101,10 @@ def analyze_text_for_bias(
         highlighted_text = highlight_bias(text_input, biased_words)
 
         progress(1.0, "Analysis complete.")
-        return highlighted_text, processed_response
+        return highlighted_text, processed_response, bias_score
     except Exception as e:
         progress(1.0, "Analysis failed.")
-        return f"Error: {e}", ""
+        return f"Error: {e}", "", -1  # -1 as fallback for bias score
     
 def analyze_image_for_bias(
     image: Image,
@@ -204,17 +231,19 @@ def analyze_text_csv(
         results = []
         for i, text in enumerate(df["text"]):
             try:
-                highlighted_text, analysis = analyze_text_for_bias(text, use_summarizer=use_summarizer)
+                highlighted_text, analysis, score = analyze_text_for_bias(text, use_summarizer=use_summarizer)
                 results.append({
                     "row_index": i + 1,
                     "text": highlighted_text,
-                    "analysis": analysis
+                    "analysis": analysis,
+                    "bias_score_percentage": f"{score}%" if score != -1 else "N/A"
                 })
             except Exception as e:
                 results.append({
                     "row_index": i + 1,
                     "text": "Error",
-                    "analysis": str(e)
+                    "analysis": str(e),
+                    "bias_score_percentage": -1
                 })
 
         result_df = pd.DataFrame(results)
