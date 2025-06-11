@@ -18,3 +18,4 @@ _autosummary
 package/
 bin/
 emission-monitoring/
+emissions.csv
