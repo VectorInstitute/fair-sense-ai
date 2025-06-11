@@ -255,7 +255,7 @@ class FairsenseGPURuntime(FairsenseRuntime):
         tracker = OfflineEmissionsTracker(
             country_iso_code="CAN", 
             project_name="fairsense-gpu-inference", 
-            # output_dir=self.emissions_output_dir,
+            output_dir=self.emissions_output_dir,
         )
         
         tracker.start()
@@ -364,7 +364,7 @@ class FairsenseCPURuntime(FairsenseRuntime):
         tracker = OfflineEmissionsTracker(
             country_iso_code="CAN", 
             project_name="fairsense-cpu-inference", 
-            # output_dir=self.emissions_output_dir,
+            output_dir=self.emissions_output_dir,
         )
         
         tracker.start()
