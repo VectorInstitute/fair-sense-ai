@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fair-sense-ai"
-version = "1.0.8"
+version = "1.0.9"
 description = ""
 authors = ["Shaina Raza, PhD <shaina.raza@torontomu.ca>"]
 license = "Creative Commons BY-NC 4.0"
@@ -19,7 +19,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 ollama = "^0.4.5"
-transformers = ">=4.47.1, <4.52.1"
+transformers = ">=4.47.1, <4.51"
 pillow = "^10.4"
 pandas = "^2.2.2"
 gradio = "^5"
