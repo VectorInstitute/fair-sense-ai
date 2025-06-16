@@ -19,7 +19,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 ollama = "^0.4.5"
-transformers = "^4.47.1"
+transformers = ">=4.47.1, <4.52.1"
 pillow = "^10.4"
 pandas = "^2.2.2"
 gradio = "^5"
