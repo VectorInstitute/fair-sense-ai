@@ -5,6 +5,8 @@ datas = []
 datas += collect_data_files('gradio')
 datas += collect_data_files('gradio_client')
 datas += collect_data_files('safehttpx')
+datas += [(src, dst) for src, dst in collect_data_files("codecarbon") if src.endswith("global_energ
+y_mix.json")]
 datas.append(('../fairsenseai/ui', 'fairsenseai/ui'))
 datas.append(('../fairsenseai/dataframes_and_indexes', 'fairsenseai/dataframes_and_indexes'))
 
