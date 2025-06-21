@@ -56,6 +56,9 @@ class FairsenseRuntime(object):
             self.add_allowed_path(self.emissions_output_dir)
 
         else:
+            self.bias_default_directory = None
+            self.risk_default_directory = None
+            self.emissions_output_dir = "."
             print("Starting FairsenseRuntime without file system access.")
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -257,6 +260,11 @@ class FairsenseGPURuntime(FairsenseRuntime):
             project_name="fairsense-gpu-inference", 
             output_dir=self.emissions_output_dir,
         )
+
+        if not self.allow_filesystem_access:
+            # TODO: This is a hack to prevent the tracker from saving to file when filesystem access is disabled
+            # They should come up with a better solution for this
+            tracker.save_to_file = False
         
         tracker.start()
         try:
@@ -366,7 +374,12 @@ class FairsenseCPURuntime(FairsenseRuntime):
             project_name="fairsense-cpu-inference", 
             output_dir=self.emissions_output_dir,
         )
-        
+
+        if not self.allow_filesystem_access:
+            # TODO: This is a hack to prevent the tracker from saving to file when filesystem access is disabled
+            # They should come up with a better solution for this
+            tracker.save_to_file = False
+
         tracker.start()
         try:
             if progress:

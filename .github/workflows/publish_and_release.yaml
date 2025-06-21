@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+  # Example on how to trigger this workflow manually:
+  # gh workflow run publish_and_release.yaml --field tag=v1.0.11-test --ref=fix-win-exec
+  # Where `v1.0.11-test` is the tag to use, and `fix-win-exec` is the branch to use (optional).
   workflow_dispatch:
     inputs:
       tag:

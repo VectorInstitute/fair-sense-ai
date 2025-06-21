@@ -49,13 +49,13 @@ def start_server(
     script_dir = Path(__file__).resolve().parent
     ui_dir = script_dir / "ui"
 
-    with open(ui_dir / "home.html") as home_file:
+    with open(ui_dir / "home.html", encoding="utf-8") as home_file:
         home = home_file.read()
 
-    with open(ui_dir / "footer.html") as footer_file:
+    with open(ui_dir / "footer.html", encoding="utf-8") as footer_file:
         footer = footer_file.read()
 
-    with open(ui_dir / "about.html") as page_file:
+    with open(ui_dir / "about.html", encoding="utf-8") as page_file:
         about = page_file.read()
 
     demo = gr.Blocks()
