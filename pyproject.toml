@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fair-sense-ai"
-version = "1.0.10"
+version = "1.0.11"  # Update this version with each new release
 description = ""
 authors = ["Shaina Raza, PhD <shaina.raza@torontomu.ca>"]
 license = "Creative Commons BY-NC 4.0"

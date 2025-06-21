@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fair_sense_ai',
-    version='1.0.10',  # Update this version with each new release
+    version='1.0.11',  # Update this version with each new release
     packages=find_packages(),
     include_package_data=True,
     package_data={
